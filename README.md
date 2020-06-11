@@ -2,7 +2,7 @@
 
  <<<<<<<<<<<<<<<<<<<<<<<<< WIP >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ## 1. Techstack
-- [VueJS](https://vuejs.org/v2/guide/)
+- [VueJS](https://vuejs.org/v2/guide/) (Put in the project just for now, we don't have to use it if we decide not to)
 - [Truffle](https://www.trufflesuite.com/docs)
 - [Ganache](https://www.trufflesuite.com/ganache)
 
