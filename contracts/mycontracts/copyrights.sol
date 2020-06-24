@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.6.10;
+pragma solidity 0.5.16;
 
 contract Property{
     
@@ -10,7 +10,8 @@ contract Property{
     
     uint public price;
     bool public isForSale;
-    uint public sellingIndex; //<- importand for later so that we remove it from sellingList
+    uint public ownersIndex; //<- importand for later so that we can remove it from ownersList without loop
+    uint public sellingIndex; //<- importand for later so that we remove it from sellingList without loop
     //verification of owner happens inside trusted contract!
     modifier fromTrustedContract() {
         require(
@@ -30,9 +31,7 @@ contract Property{
         databaseReference = _databaseReference;
         isForSale = false;
     }
-    function getSellingIndex() public view returns (uint){
-        return sellingIndex;
-    }
+   
     function buy (address payable buyer) public payable fromTrustedContract{
         require(buyer!=owner, "Owner cannot be Buyer");
         require(isForSale, "Item is not for sell");
@@ -50,6 +49,10 @@ contract Property{
     
     function stopSelling() public fromTrustedContract{
         isForSale = false;
+    }
+    
+    function setOwnersIndex(uint newIndex) public fromTrustedContract{
+        ownersIndex = newIndex;
     }
     
 } 
@@ -83,23 +86,32 @@ contract ipDatabase{
         Property p = Property(address(hashDatabase[_hash]));
         require(p.owner()!=msg.sender, "Owner cannot buy his own property");
         //call buy function and pass the money to the buy function...
+        address oldOwner = p.owner(); //need it for later to remove property from his list
         p.buy.value(msg.value)(msg.sender); //<- this is how you forward the money to the next function/contract
     
         //if we are here that means the property got sold 
-        //-> remove from the itemsForSale list
-        if(itemsForSale.length>1){ 
+        //remove from listing
+        removeProperty(itemsForSale,p.sellingIndex());
+        //remove from old-owners list
+        removeProperty(ownerToHashes[oldOwner],p.ownersIndex());
+        //add to new owners list and update owners index inside the property
+        p.setOwnersIndex(ownerToHashes[p.owner()].push(p)-1);
+    }
+    
+    function removeProperty(Property[] storage list, uint index) private {
+        if(list.length>1){ 
             //if more than one element, switch last with the item to remove
-            uint index = p.getSellingIndex();
-            itemsForSale[index]=itemsForSale[itemsForSale.length-1];
+            list[index]=list[list.length-1];
         }
         //decrease list size
-        //itemsForSale.length--; deprecated
-        itemsForSale.pop();
+        //list.length--; 
+        list.pop(); 
     }
     
     function startSellingProperty(string memory _hash, uint price) public  {
         require(hashDatabase[_hash]!=address(0x0),"Hash doesnt exist");
         Property p = Property(address(hashDatabase[_hash]));
+        require(p.isForSale()==false,"Property already for sale!");
         require(p.owner()==msg.sender, "Only owner can start selling his property");
         itemsForSale.push(p); //put the listing up
         //call buy function and pass the money to the buy function...
