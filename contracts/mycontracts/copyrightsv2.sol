@@ -16,6 +16,7 @@ contract idDatabase{
         bool isForSale;
         uint price;
         uint sellingIndex;
+        bool exists;
     }
 
     address[] userAddresses;
@@ -27,9 +28,9 @@ contract idDatabase{
     Copyright[] itemsForSale;
     
     function addCopyright (string memory _fingerprint) private {
-        require(copyrights[_fingerprint] == address(0x0), "Fingerprint already exists in the database!");
+        require(copyrights[_fingerprint].exists == false, "Fingerprint already exists in the database!");
 
-        Copyright storage newCopyright = Copyright(_fingerprint, msg.sender, false, -1, -1);
+        Copyright memory newCopyright = Copyright(_fingerprint, msg.sender, false, uint(-1), uint(-1), true);
         accounts[msg.sender].copyrights.push(newCopyright);
 
         copyrights[_fingerprint] = newCopyright;
@@ -38,9 +39,9 @@ contract idDatabase{
 
     function sellCopyright(string memory _fingerprint, uint _price) private {
         Copyright storage copyright = copyrights[_fingerprint];
-        require(copyright.fingerprint > 0, "There is no such copyright saved on the blockchain");
+        require(copyright.exists == true, "There is no such copyright saved on the blockchain");
         require(msg.sender == copyright.owner, "Only the owner can call this function");
-        require(itemsForSale[_fingerprint] == address(0x0) && copyright.isForSale == false,
+        require(copyright.isForSale == false,
         "This copyright is already for sale");
 
         copyright.isForSale = true;
@@ -52,9 +53,9 @@ contract idDatabase{
         itemsForSale.push(copyright);
     }
 
-    function buyCopyright(string memory _fingerprint) private payable {
+    function buyCopyright(string memory _fingerprint) public payable {
         Copyright storage copyright = copyrights[_fingerprint];
-        require(copyright.fingerprint > 0 && copyrights[_fingerprint].isForSale == true,
+        require(copyright.exists == true && copyrights[_fingerprint].isForSale == true,
         "Is not for sale!");
         require(msg.sender != copyright.owner, "The owner can not be the buyer");
         require(msg.value >= copyright.price, "The funds are not sufficient");
