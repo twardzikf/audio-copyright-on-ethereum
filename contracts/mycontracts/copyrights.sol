@@ -118,6 +118,17 @@ contract ipDatabase{
         p.startSelling(price,itemsForSale.length-1); //TODO doesnt work because msg.sender will be the contract itself..
         
     }
+
+    function stopSellingProperty(string memory _hash) public {
+        require(hashDatabase[_hash]!=address(0x0),"Hash doesnt exist");
+        Property p = Property(address(hashDatabase[_hash]));
+        require(p.isForSale()==true,"Property is not for sale!");
+        require(p.owner()==msg.sender, "Only owner can stop selling his property");
+        
+        removeProperty(itemsForSale,p.sellingIndex());
+        p.stopSelling();
+    }
+
     function getOwnerOfHash(string memory _hash) public view returns (address) {
        require(hashDatabase[_hash]!=address(0x0),"Hash doesnt exist");
        Property p = Property(address(hashDatabase[_hash]));
