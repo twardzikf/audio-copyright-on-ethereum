@@ -1,18 +1,26 @@
 <template>
   <div id="app">
-    <router-view
-      :is-d-app-ready="isDAppReady"
-      :current-view="currentView"
-      :is-valid-user-but="isValidUserBut"
-      @log-user-in="logUserIn"
-      @log-user-out="logUserOut"
-    />
+    <Header />
+    <div class="main">
+      <router-view
+        :is-d-app-ready="isDAppReady"
+        :current-view="currentView"
+        :is-valid-user-but="isValidUserBut"
+        @log-user-in="logUserIn"
+        @log-user-out="logUserOut"
+      />
+    </div>
+    
   </div>
 </template>
 
 <script>
+import Header from './Header'
 export default {
   name: 'App',
+  components: {
+    Header,
+  },
   props: {
     isDAppReady: {
       type: Boolean,
@@ -40,13 +48,10 @@ export default {
 </script>
 
 <style>
-  html {
-    background: #eef0ef;
-  }
-
   body {
     margin: 0;
     width: 100%;
+    font-family: Arial, Helvetica, sans-serif;
   }
 
   * {
@@ -58,13 +63,11 @@ export default {
   }
 
   #app {
-    font-family: 'Avenir', Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    display: flex;
+    flex-direction: column;
     color: #2c3e50;
     width: 100%;
-    /*max-width: 960px;*/
-    min-width: 1020px;
+    max-width: 960px;
     margin: auto;
   }
 </style>
