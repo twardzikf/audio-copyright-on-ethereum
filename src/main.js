@@ -2,6 +2,7 @@ import Vue from 'vue'
 import App from './components/App.vue'
 import router from './router'
 import store from './store'
+import axios from 'axios'
 
 import { mapState, mapActions } from 'vuex'
 import { ACTION_TYPES } from './util/constants'
@@ -16,6 +17,7 @@ Vue.use(VueMaterial)
 
 Vue.config.devtools = true
 Vue.config.productionTip = false
+Vue.prototype.$http = axios
 
 /* eslint-disable no-new */
 
