@@ -27,7 +27,7 @@ contract idDatabase{
 
     Copyright[] itemsForSale;
     
-    function addCopyright (string memory _fingerprint) private {
+    function addCopyright (string memory _fingerprint) public {
         require(copyrights[_fingerprint].exists == false, "Fingerprint already exists in the database!");
 
         Copyright memory newCopyright = Copyright(_fingerprint, msg.sender, false, uint(-1), uint(-1), true);
