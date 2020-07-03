@@ -16,7 +16,7 @@ export default class BlockchainService {
   }
 
   addCopyright(fingerprint) {
-    const response = this.database.addCopyright(fingerprint)
+    const response = this.database.addCopyright.apply(this.database, fingerprint)
     console.log(response)
   }
   sellCopyright(fingerprint, price) {
