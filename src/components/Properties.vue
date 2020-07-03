@@ -25,8 +25,12 @@ export default {
   props: {},
   data: function() {
     return {
-      file: null
+      file: null,
+      root: this.$root
     };
+  },
+  created: function() {
+    console.log(this.$root);
   },
   methods: {
     calculateFingerprint: function() {
@@ -43,7 +47,6 @@ export default {
           ],
           name: "addCopyright",
           outputs: [],
-          args: 5,
           payable: false,
           stateMutability: "nonpayable",
           type: "function"
@@ -77,10 +80,39 @@ export default {
           const blockchainService = new BlockchainService(
             document.web3,
             "7545",
-            ABI, 
-            '0xbBda3607F78A65eF1B3F786a0Fd1761895EB9B9e'
+            ABI,
+            "2Cf0DB0A674db2ABC35518e2E9edc87234c4F883"
           );
-          blockchainService.addCopyright(data.data.fingerprint);
+          // blockchainService.addCopyright(data.data.fingerprint);
+
+          var fingerprint = data.data.fingerprint;
+
+          var ipDb;
+
+          this.$root.$data.web3.eth.getAccounts(function(error, accounts) {
+            console.log(error + '\n' + accounts);
+            if (error) {
+              console.log(error);
+            }
+
+            var account = accounts[0];
+
+            this.$root.$data.contracts.ipDatabase
+              .deployed()
+              .then(function(instance) {
+                ipDb = instance;
+
+                // Execute adopt as a transaction by sending account
+                return ipDb.addCopyright(fingerprint);
+              })
+              .then(function(result) {
+                console.log(result);
+                // return Aprp.markAdopted();
+              })
+              .catch(function(err) {
+                console.log(err.message);
+              });
+          });
         });
     },
     getFileBytesArray: function(event) {
