@@ -8,6 +8,12 @@ import { ACTION_TYPES } from './util/constants'
 import UserManager from './js/UserManager'
 import monitorWeb3 from './util/web3/monitorWeb3'
 
+import VueMaterial from 'vue-material'
+import 'vue-material/dist/vue-material.min.css'
+import 'vue-material/dist/theme/default.css'
+
+Vue.use(VueMaterial)
+
 Vue.config.devtools = true
 Vue.config.productionTip = false
 
