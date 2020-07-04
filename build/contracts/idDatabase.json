@@ -6799,12 +6799,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x2Cf0DB0A674db2ABC35518e2E9edc87234c4F883",
-      "transactionHash": "0x552cfbe5465945af4b681dd1a9593854748fdcca2ee3650ff42e3ce916672e4e"
+      "address": "0x552b592C8915b1c3D28802AeAd1A7D32e4C41353",
+      "transactionHash": "0x54d27522d0b2d0d7ee2ceb83ee1cea31662683b28a12390332cf5d8bf64e8bb3"
     }
   },
   "schemaVersion": "3.2.1",
-  "updatedAt": "2020-07-03T16:30:32.153Z",
+  "updatedAt": "2020-07-04T14:59:06.454Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

@@ -24,10 +24,12 @@ new Vue({
   created: async function () {
     await this.initWeb3();
     await this.initContract();
+    await this.initAddress();
   },
   data: {
     web3Provider: null,
     web3: null,
+    account: null,
     contracts: {},
 
   },
@@ -54,8 +56,6 @@ new Vue({
         );
       }
       web3 = new Web3(this.web3Provider);
-      // console.log(web3.eth.getAccounts());
-      // web3.eth.defaultAccount = accounts[0]
     },
     initContract: function () {
         // Get the necessary contract artifact file and instantiate it with @truffle/contract
@@ -63,14 +63,18 @@ new Vue({
           this.contracts.ipDatabase = TruffleContract(data);
           this.contracts.ipDatabase.setProvider(this.web3Provider);
         }.bind(this));
-        
-  
-        // Set the provider for our contract
-        
-  
-        // Use our contract to retrieve and mark the adopted pets
-        // return App.markAdopted();
     },
+    initAddress: function() {
+      web3.eth.getAccounts(function(error, accounts) {
+        console.log(this);
+        
+        this.$data.account = accounts[0]
+        console.log('account: ' + this.$data.account);
+        if (error) {
+          console.log(error);
+        }
+      }.bind(this));
+    }
   },
   template: '<App />'
 })

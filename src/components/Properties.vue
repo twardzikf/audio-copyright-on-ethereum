@@ -37,7 +37,7 @@ export default {
       const baseURI = "http://localhost:3000/";
       var formData = new FormData();
       formData.append("song", this.file);
-      
+
       this.$http
         .post(baseURI, formData, {
           headers: {
@@ -45,40 +45,26 @@ export default {
           }
         })
         .then(data => {
-          var fingerprint = data.data.data.fingerprint;
-
-          var ipDb;
+          const fingerprint = data.data.data.fingerprint;
+          let ipDb;
+          const account = this.$root.$data.account;
 
           console.log(web3);
+          this.$root.$data.contracts.ipDatabase
+            .deployed()
+            .then(function(instance) {
+              ipDb = instance;
 
-          web3.eth.getAccounts(function(error, accounts) {
-            const account = accounts[0]
-            console.log('account: ' + account);
-            if (error) {
-              console.log(error);
-            }
+              console.log(ipDb);
 
-            console.log('+++++++++');
-            console.log(this);
-            console.log('+++++++++');
-            this.$root.$data.contracts.ipDatabase
-              .deployed()
-              .then(function(instance) {
-                ipDb = instance;
-
-                console.log(ipDb);
-                
-                return ipDb.addCopyright(fingerprint, { from: account });
-                
-              })
-              .then(function(result) {
-                console.log(result);
-                // return Aprp.markAdopted();
-              })
-              .catch(function(err) {
-                console.log(err.message);
-              });
-          }.bind(this));
+              return ipDb.addCopyright(fingerprint, { from: account });
+            })
+            .then(function(result) {
+              console.log(result);
+            })
+            .catch(function(err) {
+              console.log(err.message);
+            });
         });
     },
     getFileBytesArray: function(event) {
