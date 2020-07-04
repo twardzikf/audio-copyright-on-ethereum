@@ -35,40 +35,9 @@ export default {
   methods: {
     calculateFingerprint: function() {
       const baseURI = "http://localhost:3000/";
-      const ABI = [
-        {
-          constant: false,
-          inputs: [
-            {
-              internalType: "string",
-              name: "_fingerprint",
-              type: "string"
-            }
-          ],
-          name: "addCopyright",
-          outputs: [],
-          payable: false,
-          stateMutability: "nonpayable",
-          type: "function"
-        },
-        {
-          constant: false,
-          inputs: [
-            {
-              internalType: "string",
-              name: "_fingerprint",
-              type: "string"
-            }
-          ],
-          name: "buyCopyright",
-          outputs: [],
-          payable: true,
-          stateMutability: "payable",
-          type: "function"
-        }
-      ];
       var formData = new FormData();
       formData.append("song", this.file);
+      
       this.$http
         .post(baseURI, formData, {
           headers: {
@@ -76,34 +45,31 @@ export default {
           }
         })
         .then(data => {
-          console.log(data);
-          const blockchainService = new BlockchainService(
-            document.web3,
-            "7545",
-            ABI,
-            "2Cf0DB0A674db2ABC35518e2E9edc87234c4F883"
-          );
-          // blockchainService.addCopyright(data.data.fingerprint);
-
-          var fingerprint = data.data.fingerprint;
+          var fingerprint = data.data.data.fingerprint;
 
           var ipDb;
 
-          this.$root.$data.web3.eth.getAccounts(function(error, accounts) {
-            console.log(error + '\n' + accounts);
+          console.log(web3);
+
+          web3.eth.getAccounts(function(error, accounts) {
+            const account = accounts[0]
+            console.log('account: ' + account);
             if (error) {
               console.log(error);
             }
 
-            var account = accounts[0];
-
+            console.log('+++++++++');
+            console.log(this);
+            console.log('+++++++++');
             this.$root.$data.contracts.ipDatabase
               .deployed()
               .then(function(instance) {
                 ipDb = instance;
 
-                // Execute adopt as a transaction by sending account
-                return ipDb.addCopyright(fingerprint);
+                console.log(ipDb);
+                
+                return ipDb.addCopyright(fingerprint, { from: account });
+                
               })
               .then(function(result) {
                 console.log(result);
@@ -112,7 +78,7 @@ export default {
               .catch(function(err) {
                 console.log(err.message);
               });
-          });
+          }.bind(this));
         });
     },
     getFileBytesArray: function(event) {
