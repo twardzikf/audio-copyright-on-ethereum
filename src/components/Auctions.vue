@@ -1,11 +1,6 @@
 <template>
   <div class="auctions">
-    <div class="auction-list">
-      mine shit
-    </div>
-    <div class="auction-list">
-      other shit
-    </div>
+    WIP
   </div>
 </template>
 <script>
@@ -18,7 +13,4 @@ export default {
 }
 </script>
 <style scoped>
-.auction-list {
-
-}
 </style>

@@ -1,94 +1,84 @@
 <template>
   <div class="properties">
     <div class="section md-layout">
+      <span class="title">Add property</span>
       <md-field class="md-layout-item md-size-70">
         <label>Choose audio file</label>
-        <md-file name="song" id="song-input" v-on:change="getFileBytesArray" />
+        <md-file name="song" id="song-input" @change="getFileBytesArray" />
       </md-field>
       <md-button
         class="md-raised md-primary md-layout-item md-size-10"
-        v-on:click="calculateFingerprint"
+        @click="$root.$emit('add-fingerprint', file)"
       >Upload</md-button>
     </div>
     <div class="section">
       <span class="title">My properties</span>
-    </div>
-    <div class="section">
-      <span class="title">Properties for sell</span>
+      <md-table>
+        <md-table-row>
+          <md-table-head md-numeric>#</md-table-head>
+          <md-table-head>Name</md-table-head>
+          <md-table-head>Fingerprint</md-table-head>
+          <md-table-head></md-table-head>
+        </md-table-row>
+        <md-table-row
+          v-for="(property, index) in ownProperties"
+          :key="property.fingerprint"
+        >
+          <md-table-cell md-numeric>{{ (index + 1) }}</md-table-cell>
+          <md-table-cell>{{ property.title }}</md-table-cell>
+          <md-table-cell>{{ property.fingerprint }}</md-table-cell>
+          <md-table-cell>
+            <md-button class="md-raised" @click="isDialogActive = true">
+                Offer for sell
+            </md-button>
+          </md-table-cell>
+          <md-dialog-prompt
+            :md-active.sync="isDialogActive"
+            md-title="Set price for your IP"
+            md-input-maxlength="15"
+            md-input-placeholder=""
+            md-confirm-text="Offer for sell" 
+            @md-confirm="onConfirmOfferForSell(...arguments, property.fingerprint)"
+          />
+        </md-table-row>
+      </md-table>
     </div>
   </div>
 </template>
 <script>
-import BlockchainService from "../js/BlockchainService";
 export default {
   name: "Properties",
-  props: {},
-  data: function() {
+  data() {
     return {
       file: null,
-      root: this.$root
+      isDialogActive: false,
     };
   },
-  created: function() {
-    console.log(this.$root);
+  computed: {
+    ownProperties() {
+      return this.$root.$data.ownProperties;
+    },
   },
   methods: {
-    calculateFingerprint: function() {
-      const baseURI = "http://localhost:3000/";
-      var formData = new FormData();
-      formData.append("song", this.file);
-
-      this.$http
-        .post(baseURI, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data"
-          }
-        })
-        .then(data => {
-          const fingerprint = data.data.data.fingerprint;
-          let ipDb;
-          const account = this.$root.$data.account;
-
-          console.log(web3);
-          this.$root.$data.contracts.ipDatabase
-            .deployed()
-            .then(function(instance) {
-              ipDb = instance;
-
-              console.log(ipDb);
-
-              return ipDb.addCopyright(fingerprint, { from: account });
-            })
-            .then(function(result) {
-              console.log(result);
-            })
-            .catch(function(err) {
-              console.log(err.message);
-            });
-        });
-    },
-    getFileBytesArray: function(event) {
+    getFileBytesArray(event) {
       this.file = event.target.files[0];
-    }
+    },
+    onConfirmOfferForSell(value, fingerprint) {
+      this.$root.$emit('offer-ip-for-sell', { fingerprint: fingerprint, price: value })
+    },
   }
 };
 </script>
 <style scoped>
 .section {
   padding: 0.5rem 0;
-  border-bottom: 1px solid #00c0f5;
+  border-bottom: 2px solid #03DAC6;
 }
 .title {
   font-size: 1.25rem;
   color: black;
+  margin-bottom: 0.5rem;
 }
 
-input {
-  appearance: none;
-  border: none;
-  min-width: 0;
-  font-family: sans-serif;
-  line-height: 1;
-  background: transparent;
-}
+
 </style>

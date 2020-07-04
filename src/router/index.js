@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Home from '@/components/Home'
+import Market from '@/components/Market'
 import Auctions from '@/components/Auctions'
 import Properties from '@/components/Properties'
 
@@ -25,6 +26,12 @@ export default new Router({
       path: '/properties',
       name: 'Properties',
       component: Properties
+    },
+    {
+      mode: 'history',
+      path: '/market',
+      name: 'Market',
+      component: Market
     },
   ]
 })

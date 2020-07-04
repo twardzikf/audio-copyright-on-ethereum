@@ -25,13 +25,33 @@ new Vue({
     await this.initWeb3();
     await this.initContract();
     await this.initAddress();
+    this.$root.$on('connect-to-account', () => {
+      console.log('Connect to account')
+    })
+    this.$root.$on('buy-ip', (fingerprint) => {
+      console.log(`Buy ip ${fingerprint}`)
+    })
+    this.$root.$on('offer-ip-for-sell', (data) => {
+      console.log(`Offer ip for sell ${data.fingerprint} for how much? ${data.price}`)
+    })
+    this.$root.$on('add-fingerprint', (file) => {
+      console.log(`add fingerpint`)
+      this.calculateFingerprint(file)
+    })
   },
   data: {
     web3Provider: null,
     web3: null,
     account: null,
     contracts: {},
-
+    ownProperties: [
+      { fingerprint: 'xyzjapierdole', title: 'An audio file #1' },
+      { fingerprint: 'noichujnoiczesc', title: 'An audio file #2' },
+    ],
+    propertiesForSell: [
+      { fingerprint: 'xyzjapierdole', title: 'An audio file #3', owner: '0xSomeone', price: '0.003 ETH' },
+      { fingerprint: 'noichujnoiczesc', title: 'An audio file #4', owner: '0xNoone', price: '0.0009 ETH' },
+    ],
   },
   methods: {
     initWeb3: async function () {
@@ -74,7 +94,41 @@ new Vue({
           console.log(error);
         }
       }.bind(this));
-    }
+    },
+    calculateFingerprint(file) {
+      const baseURI = "http://localhost:3000/";
+      var formData = new FormData();
+      formData.append("song", file);
+
+      this.$http
+        .post(baseURI, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
+        })
+        .then(data => {
+          const fingerprint = data.data.data.fingerprint;
+          let ipDb;
+          const account = this.$root.$data.account;
+
+          console.log(web3);
+          this.$root.$data.contracts.ipDatabase
+            .deployed()
+            .then(function(instance) {
+              ipDb = instance;
+
+              console.log(ipDb);
+
+              return ipDb.addCopyright(fingerprint, { from: account });
+            })
+            .then(function(result) {
+              console.log(result);
+            })
+            .catch(function(err) {
+              console.log(err.message);
+            });
+        });
+    },
   },
   template: '<App />'
 })

@@ -1,20 +1,16 @@
 <template>
   <div id="home">
-   there should be nothing here
+    <md-button 
+      class="md-raised md-accent"
+      @click="$root.$emit('connect-to-account')"
+    >
+      Connect to your Eth account!
+    </md-button>
   </div>
 </template>
 
 <script>
 export default {
   name: 'Home',
-  components: {
-  },
 }
-
 </script>
-
-<style scoped>
-  #home {
-    width: 100%;
-  }
-</style>
