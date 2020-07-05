@@ -1,7 +1,7 @@
 // const Database = artifacts.require('idDatabase')
 // const DB = artifacts.require('Database')
 // const Property = artifacts.require('Property')
-const PropertiesDB = artifact.require('PropertiesDB')
+const PropertiesDB = artifacts.require('PropertiesDB')
 
 module.exports = async (deployer) => {
   const OWNER = '0xA4CA6b32b5093C3d9B0Bee41e62dD9E85aaf9819';
