@@ -8,7 +8,7 @@
           <md-table-head>Name</md-table-head>
           <md-table-head>Fingerprint</md-table-head>
           <md-table-head>Owner</md-table-head>
-          <md-table-head>Fingerprint</md-table-head>
+          <md-table-head>Price</md-table-head>
           <md-table-head></md-table-head>
         </md-table-row>
         <md-table-row
@@ -21,8 +21,8 @@
           <md-table-cell>{{ property.owner }}</md-table-cell>
           <md-table-cell>{{ property.price }}</md-table-cell>
           <md-table-cell>
-            <md-button class="md-raised" @click="$root.$emit('buy-ip', property.fingerprint)">
-                Purchase
+            <md-button class="md-raised" @click="$root.$emit('buy-ip', property.fingerprint, property.price)">
+                Buy
             </md-button>
           </md-table-cell>
         </md-table-row>

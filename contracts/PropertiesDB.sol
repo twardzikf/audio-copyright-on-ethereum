@@ -8,38 +8,38 @@ contract PropertiesDB {
         string fingerprint;
         string title;
     }
-    
+
     struct PropertyForSaleDTO {
         string fingerprint;
         string title;
         address owner;
         uint price;
     }
-    
-    
+
+
     address[] propertyOwners;
     mapping (address => Property[]) properties;
-    
+
     string[] propertiesForSale;
     mapping (string => uint) salePrices;
-    
+
     /* Actions on the database */
-    
+
     function addProperty (string memory _fingerprint, string memory _title) public {
         require(!isPropertyPresent(_fingerprint), "Property already exists in the database!");
 
-        propertyOwners.push(msg.sender);
+        if (!isOwnerPresent(msg.sender)) propertyOwners.push(msg.sender);
         properties[msg.sender].push(Property(_fingerprint, _title));
     }
-    
+
     function fetchProperties() public view returns (Property[] memory){
         return properties[msg.sender];
     }
-    
+
     function fetchPropertiesForSale() public view returns (PropertyForSaleDTO[] memory) {
         uint propertiesForSaleLength = propertiesForSale.length;
         PropertyForSaleDTO[] memory _propertiesForSale = new PropertyForSaleDTO[](propertiesForSaleLength); //specify exact array length
-        for (uint i= 0; i < propertiesForSale.length; i++) {
+        for (uint i = 0; i < propertiesForSale.length; i++) {
             if (!isOwner(propertiesForSale[i], msg.sender)) {
                 _propertiesForSale[i] = createPropertyForSaleDto(propertiesForSale[i]);
             }
@@ -55,27 +55,27 @@ contract PropertiesDB {
         propertiesForSale.push(_fingerprint);
         salePrices[_fingerprint] = _price;
     }
-    
+
     function buyProperty(string memory _fingerprint) public payable {
         require(isPropertyPresent(_fingerprint), "There is no such property saved on the blockchain");
         require(isPropertyForSale(_fingerprint), "This property is not for sale");
         require(!isOwner(_fingerprint, msg.sender), "The owner can not be the buyer");
         require(msg.value >= getPropertyPrice(_fingerprint), "The funds are not sufficient");
-        
+
         uint price = getPropertyPrice(_fingerprint);
         address payable owner = address(uint160(getPropertyOwner(_fingerprint)));
         Property memory property =  getProperty(_fingerprint);
-        
+
         properties[msg.sender].push(property);
         deleteFromPropertiesForSale(_fingerprint);
         deleteFromProperties(_fingerprint, owner);
         owner.transfer(price);
     }
-    
 
-    
+
+
     /* Queries on the database */
-    
+
     function isOwner (string memory _fingerprint, address userAddress) private view returns (bool) {
         Property[] memory userProperties = properties[userAddress];
         for (uint i = 0; i < userProperties.length; i++) {
@@ -92,6 +92,12 @@ contract PropertiesDB {
     function isPropertyForSale (string memory _fingerprint) private view returns (bool) {
         for (uint i = 0; i < propertiesForSale.length; i++) {
             if (areStringsEqual(propertiesForSale[i], _fingerprint)) return true;
+        }
+        return false;
+    }
+    function isOwnerPresent (address ownerAddress) private view returns (bool) {
+        for (uint i = 0; i < propertyOwners.length; i++) {
+            if (propertyOwners[i] == ownerAddress) return true;
         }
         return false;
     }

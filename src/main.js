@@ -26,20 +26,21 @@ new Vue({
     await this.initContract();
     await this.initAddress();
     this.fetchProperties();
+    this.fetchPropertiesForSale();
 
     this.$root.$on('connect-to-account', () => {
       console.log('Connect to account')
     })
-    this.$root.$on('buy-ip', (fingerprint) => {
-      console.log(`Buy ip ${fingerprint}`)
+    this.$root.$on('buy-ip', async (fingerprint, price) => {
+      await this.buyProperty(fingerprint, price);
+      this.fetchProperties();
     })
-    this.$root.$on('offer-ip-for-sell', (data) => {
-      console.log(`Offer ip for sell ${data.fingerprint} for: ${data.price}`)
-      this.offerIpForSell(data.fingerprint, data.price);
+    this.$root.$on('offer-ip-for-sell', async ({ fingerprint, price }) => {
+      await this.offerPropertyForSale(fingerprint, price);
+      this.fetchPropertiesForSale();
     })
     this.$root.$on('add-fingerprint', (file, title) => {
-      console.log(`add fingerpint`)
-      this.calculateFingerprint(file, title)
+      this.calculateFingerprint(file, title);
     })
   },
   data: function () {
@@ -49,14 +50,11 @@ new Vue({
       account: null,
       contracts: {},
       ownProperties: [],
-      propertiesForSell: [
-        { fingerprint: 'xyzjapierdole', title: 'An audio file #3', owner: '0xSomeone', price: '0.003 ETH' },
-        { fingerprint: 'noichujnoiczesc', title: 'An audio file #4', owner: '0xNoone', price: '0.0009 ETH' },
-      ],
+      propertiesForSell: [],
     }
   },
   methods: {
-    initWeb3: async function () {
+    async initWeb3() {
       if (window.ethereum) {
         this.web3Provider = window.ethereum;
         try {
@@ -79,15 +77,16 @@ new Vue({
       }
       web3 = new Web3(this.web3Provider);
     },
-    initContract: async function () {
+    async initContract() {
       // Get the necessary contract artifact file and instantiate it with @truffle/contract
       await $.getJSON("/static/PropertiesDB.json", function (data) {
         this.contracts.propertiesDB = TruffleContract(data);
+        console.log(data)
         this.contracts.propertiesDB.setProvider(this.web3Provider);
         // this.fetchProperties(this);
       }.bind(this));
     },
-    initAddress: function () {
+    initAddress() {
       web3.eth.getAccounts(function (error, accounts) {
         console.log(this);
 
@@ -133,26 +132,30 @@ new Vue({
             });
         });
     },
-    fetchProperties: function () {
-      this.$root.$data.contracts.propertiesDB
-        .deployed()
-        .then(function (instance) {
-          return instance.fetchProperties({ from: this.$root.$data.account })
-        }.bind(this))
-        .then(function (result) {
-          this.$root.$data.ownProperties = result;
-        }.bind(this))
+    fetchProperties() {
+      this.contracts.propertiesDB.deployed().then((instance)  => {
+        return instance.fetchProperties({ from: this.account })
+      }).then((result) => {
+          this.ownProperties = result;
+        })
     },
-    offerIpForSell: function (fingerpint, price) {
-      this.$root.$data.contracts.propertiesDB
-        .deployed()
-        .then(function (instance) {
-          return instance.offerPropertyForSale(fingerpint, price, { from: this.$root.$data.account })
-        }.bind(this))
-        .then(function (result) {
-          console.log(result);
-        });
-    }
+    fetchPropertiesForSale() {
+      this.contracts.propertiesDB.deployed().then((instance)  => {
+        return instance.fetchPropertiesForSale({ from: this.account })
+      }).then((result) => {
+          this.propertiesForSell = result;
+        })
+    },
+    async buyProperty(fingerprint, price) {
+      await this.contracts.propertiesDB.deployed().then(async (instance)  => {
+        return await instance.buyProperty(fingerprint, { from: this.account, value: price });
+      })
+    },
+    async offerPropertyForSale(fingerprint, price) {
+      await this.contracts.propertiesDB.deployed().then(async (instance)  => {
+        return await instance.offerPropertyForSale(fingerprint, price, { from: this.account })
+      })
+    },
   },
   template: '<App />'
 })
