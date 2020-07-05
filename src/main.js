@@ -25,6 +25,8 @@ new Vue({
     await this.initWeb3();
     await this.initContract();
     await this.initAddress();
+    this.fetchProperties();
+
     this.$root.$on('connect-to-account', () => {
       console.log('Connect to account')
     })
@@ -34,24 +36,23 @@ new Vue({
     this.$root.$on('offer-ip-for-sell', (data) => {
       console.log(`Offer ip for sell ${data.fingerprint} for how much? ${data.price}`)
     })
-    this.$root.$on('add-fingerprint', (file) => {
+    this.$root.$on('add-fingerprint', (file, title) => {
       console.log(`add fingerpint`)
-      this.calculateFingerprint(file)
+      this.calculateFingerprint(file, title)
     })
   },
-  data: {
-    web3Provider: null,
-    web3: null,
-    account: null,
-    contracts: {},
-    ownProperties: [
-      { fingerprint: 'xyzjapierdole', title: 'An audio file #1' },
-      { fingerprint: 'noichujnoiczesc', title: 'An audio file #2' },
-    ],
-    propertiesForSell: [
-      { fingerprint: 'xyzjapierdole', title: 'An audio file #3', owner: '0xSomeone', price: '0.003 ETH' },
-      { fingerprint: 'noichujnoiczesc', title: 'An audio file #4', owner: '0xNoone', price: '0.0009 ETH' },
-    ],
+  data: function () {
+    return {
+      web3Provider: null,
+      web3: null,
+      account: null,
+      contracts: {},
+      ownProperties: [],
+      propertiesForSell: [
+        { fingerprint: 'xyzjapierdole', title: 'An audio file #3', owner: '0xSomeone', price: '0.003 ETH' },
+        { fingerprint: 'noichujnoiczesc', title: 'An audio file #4', owner: '0xNoone', price: '0.0009 ETH' },
+      ],
+    }
   },
   methods: {
     initWeb3: async function () {
@@ -77,17 +78,18 @@ new Vue({
       }
       web3 = new Web3(this.web3Provider);
     },
-    initContract: function () {
-        // Get the necessary contract artifact file and instantiate it with @truffle/contract
-        $.getJSON("/static/idDatabase.json", function(data) {
-          this.contracts.ipDatabase = TruffleContract(data);
-          this.contracts.ipDatabase.setProvider(this.web3Provider);
-        }.bind(this));
+    initContract: async function () {
+      // Get the necessary contract artifact file and instantiate it with @truffle/contract
+      await $.getJSON("/static/PropertiesDB.json", function (data) {
+        this.contracts.propertiesDB = TruffleContract(data);
+        this.contracts.propertiesDB.setProvider(this.web3Provider);
+        // this.fetchProperties(this);
+      }.bind(this));
     },
-    initAddress: function() {
-      web3.eth.getAccounts(function(error, accounts) {
+    initAddress: function () {
+      web3.eth.getAccounts(function (error, accounts) {
         console.log(this);
-        
+
         this.$data.account = accounts[0]
         console.log('account: ' + this.$data.account);
         if (error) {
@@ -95,7 +97,7 @@ new Vue({
         }
       }.bind(this));
     },
-    calculateFingerprint(file) {
+    calculateFingerprint(file, title) {
       const baseURI = "http://localhost:3000/";
       var formData = new FormData();
       formData.append("song", file);
@@ -112,23 +114,34 @@ new Vue({
           const account = this.$root.$data.account;
 
           console.log(web3);
-          this.$root.$data.contracts.ipDatabase
+          this.$root.$data.contracts.propertiesDB
             .deployed()
-            .then(function(instance) {
+            .then(function (instance) {
               ipDb = instance;
 
               console.log(ipDb);
 
-              return ipDb.addCopyright(fingerprint, { from: account });
+              return ipDb.addProperty(fingerprint, title, { from: account });
             })
-            .then(function(result) {
+            .then(function (result) {
               console.log(result);
-            })
-            .catch(function(err) {
+              this.fetchProperties();
+            }.bind(this))
+            .catch(function (err) {
               console.log(err.message);
             });
         });
     },
+    fetchProperties: function () {
+      this.$root.$data.contracts.propertiesDB
+      .deployed()
+        .then(function (instance) {
+          return instance.fetchProperties({ from: this.$root.$data.account })
+        }.bind(this))
+        .then(function (result) {
+          this.$root.$data.ownProperties = result;
+        }.bind(this))
+    }
   },
   template: '<App />'
 })

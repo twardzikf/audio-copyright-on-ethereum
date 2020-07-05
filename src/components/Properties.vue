@@ -2,14 +2,20 @@
   <div class="properties">
     <div class="section md-layout">
       <span class="title">Add property</span>
-      <md-field class="md-layout-item md-size-70">
-        <label>Choose audio file</label>
-        <md-file name="song" id="song-input" @change="getFileBytesArray" />
-      </md-field>
-      <md-button
-        class="md-raised md-primary md-layout-item md-size-10"
-        @click="$root.$emit('add-fingerprint', file)"
-      >Upload</md-button>
+      <div class="md-layout md-gutter">
+        <md-field class="md-layout-item md-size-40">
+          <label style="margin-left: 0.5rem;">Choose audio file</label>
+          <md-file name="song" id="song-input" @change="getFileBytesArray" />
+        </md-field>
+        <md-field class="md-layout-item md-size-30">
+          <label>Title</label>
+          <md-input name="title" id="title-input" v-model="title" />
+        </md-field>
+        <md-button
+          class="md-raised md-primary md-layout-item md-size-10"
+          @click="$root.$emit('add-fingerprint', file, title)"
+        >Upload</md-button>
+      </div>
     </div>
     <div class="section">
       <span class="title">My properties</span>
@@ -51,6 +57,7 @@ export default {
   data() {
     return {
       file: null,
+      title: '',
       isDialogActive: false,
     };
   },
@@ -79,6 +86,8 @@ export default {
   color: black;
   margin-bottom: 0.5rem;
 }
-
+.md-field {
+  margin-right: 0.5rem;
+}
 
 </style>
