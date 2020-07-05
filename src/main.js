@@ -4,7 +4,6 @@ import router from './router'
 import axios from 'axios'
 import TruffleContract from 'truffle-contract'
 
-
 import VueMaterial from 'vue-material'
 import 'vue-material/dist/vue-material.min.css'
 import 'vue-material/dist/theme/default.css'
@@ -28,9 +27,7 @@ new Vue({
     this.fetchProperties();
     this.fetchPropertiesForSale();
 
-    this.$root.$on('connect-to-account', () => {
-      console.log('Connect to account')
-    })
+    this.$root.$on('connect-to-account', () => {})
     this.$root.$on('buy-ip', async (fingerprint, price) => {
       await this.buyProperty(fingerprint, price);
       this.fetchProperties();
@@ -43,7 +40,7 @@ new Vue({
       this.calculateFingerprint(file, title);
     })
   },
-  data: function () {
+  data() {
     return {
       web3Provider: null,
       web3: null,
@@ -79,56 +76,38 @@ new Vue({
     },
     async initContract() {
       // Get the necessary contract artifact file and instantiate it with @truffle/contract
-      await $.getJSON("/static/PropertiesDB.json", function (data) {
+      await $.getJSON("/static/PropertiesDB.json", (data) => {
         this.contracts.propertiesDB = TruffleContract(data);
-        console.log(data)
         this.contracts.propertiesDB.setProvider(this.web3Provider);
-        // this.fetchProperties(this);
-      }.bind(this));
+      });
     },
     initAddress() {
-      web3.eth.getAccounts(function (error, accounts) {
-        console.log(this);
-
-        this.$data.account = accounts[0]
-        console.log('account: ' + this.$data.account);
+      web3.eth.getAccounts((error, accounts) => {
+        this.account = accounts[0]
         if (error) {
           console.log(error);
         }
-      }.bind(this));
+      });
     },
     calculateFingerprint(file, title) {
-      const baseURI = "http://localhost:3000/";
+      const baseURI = 'http://localhost:3000/';
       var formData = new FormData();
       formData.append("song", file);
 
-      this.$http
-        .post(baseURI, formData, {
+      this.$http.post(baseURI, formData, {
           headers: {
             "Content-Type": "multipart/form-data"
           }
-        })
-        .then(data => {
+        }).then(data => {
           const fingerprint = data.data.data.fingerprint;
           let ipDb;
           const account = this.$root.$data.account;
-
-          console.log(web3);
-          this.$root.$data.contracts.propertiesDB
-            .deployed()
-            .then(function (instance) {
-              ipDb = instance;
-
-              console.log(ipDb);
-
-              return ipDb.addProperty(fingerprint, title, { from: account });
-            })
-            .then(function (result) {
-              console.log(result);
-              this.fetchProperties();
-            }.bind(this))
-            .catch(function (err) {
-              console.log(err.message);
+          this.contracts.propertiesDB.deployed().then((instance) => {
+            return instance.addProperty(fingerprint, title, { from: account });
+          }).then((result) => {
+            this.fetchProperties();
+          }).catch((error) => {
+              console.log(error);
             });
         });
     },
