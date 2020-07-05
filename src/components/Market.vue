@@ -17,7 +17,7 @@
         >
           <md-table-cell md-numeric>{{ (index + 1) }}</md-table-cell>
           <md-table-cell>{{ property.title }}</md-table-cell>
-          <md-table-cell>{{ property.fingerprint }}</md-table-cell>
+          <md-table-cell>{{ property.fingerprint | truncate(20, '...') }}</md-table-cell>
           <md-table-cell>{{ property.owner }}</md-table-cell>
           <md-table-cell>{{ property.price }}</md-table-cell>
           <md-table-cell>

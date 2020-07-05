@@ -14,6 +14,14 @@ Vue.config.devtools = true
 Vue.config.productionTip = false
 Vue.prototype.$http = axios
 
+Vue.filter('truncate', function (text, length, suffix) {
+  if (text.length > length) {
+      return text.substring(0, length) + suffix;
+  } else {
+      return text;
+  }
+});
+
 /* eslint-disable no-new */
 
 new Vue({

@@ -32,7 +32,7 @@
         >
           <md-table-cell md-numeric>{{ (index + 1) }}</md-table-cell>
           <md-table-cell>{{ property.title }}</md-table-cell>
-          <md-table-cell>{{ property.fingerprint }}</md-table-cell>
+          <md-table-cell>{{ property.fingerprint | truncate(20, '...') }}</md-table-cell>
           <md-table-cell>
             <md-button class="md-raised" @click="isDialogActive = true">
                 Offer for sell
