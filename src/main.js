@@ -1,227 +1,152 @@
 import Vue from 'vue'
 import App from './components/App.vue'
 import router from './router'
-import store from './store'
+import axios from 'axios'
+import TruffleContract from 'truffle-contract'
 
-import { mapState, mapActions } from 'vuex'
-import { ACTION_TYPES } from './util/constants'
-import UserManager from './js/UserManager'
-import monitorWeb3 from './util/web3/monitorWeb3'
+import VueMaterial from 'vue-material'
+import 'vue-material/dist/vue-material.min.css'
+import 'vue-material/dist/theme/default.css'
+
+Vue.use(VueMaterial)
 
 Vue.config.devtools = true
 Vue.config.productionTip = false
+Vue.prototype.$http = axios
 
 /* eslint-disable no-new */
 
 new Vue({
   el: '#app',
   router,
-  store,
   components: { App },
-  data: function () {
-    return {
-      managers: {
-        UserManager
-      }
-    }
-  },
-  computed: {
-    ...mapState({
-      hasInjectedWeb3: state => state.web3.isInjected,
-      hasWeb3InjectedBrowser: state => state.user.hasWeb3InjectedBrowser,
-      isConnectedToApprovedNetwork: state => state.user.isConnectedToApprovedNetwork,
-      hasCoinbase: state => state.user.hasCoinbase,
-      networkId: state => state.web3.networkId,
-      coinbase: state => state.web3.coinbase,
-      currentRoute: state => state.currentRoute,
-      currentView: state => state.currentView,
-      user: state => state.user,
-      isDAppReady: state => state.isDAppReady,
-      isValidUserBut: state => state.isValidUserBut,
-      originalIsValidUserBut: state => state.originalIsValidUserBut,
-      gravatarURL: state => state.gravatarURL,
-      avatarCanvas: state => state.avatarCanvas,
-      defaultRoute: state => state.defaultRoute
+  created: async function () {
+    await this.initWeb3();
+    await this.initContract();
+    await this.initAddress();
+    this.fetchProperties();
+    this.fetchPropertiesForSale();
+
+    this.$root.$on('connect-to-account', () => {})
+    this.$root.$on('buy-ip', async (fingerprint, price) => {
+      await this.buyProperty(fingerprint, price);
+      this.fetchProperties();
+    })
+    this.$root.$on('offer-ip-for-sell', async ({ fingerprint, price }) => {
+      await this.offerPropertyForSale(fingerprint, price);
+      this.fetchPropertiesForSale();
+    })
+    this.$root.$on('add-fingerprint', (file, title) => {
+      this.calculateFingerprint(file, title);
     })
   },
-  watch: {
-    hasInjectedWeb3 (web3ConnectionValue) {
-      console.log('hasInjectedWeb3: ', web3ConnectionValue)
-    },
-    networkId (networkId) {
-      console.log('networkId: ', networkId)
-    },
-    coinbase (coinbase) {
-      console.log('coinbase: ', coinbase)
-    },
-    isDAppReady (isDAppReady) {
-      console.log('isDAppReady: ', isDAppReady)
-      this.callSetIsValidUserBut(this.$route.query.isValidUserBut || this.forcedIsValidUserBut)
-    },
-    $route (newRoute) {
-      this[ACTION_TYPES.CHANGE_CURRENT_ROUTE_TO](newRoute)
-      this[ACTION_TYPES.SET_CURRENT_VIEW](newRoute)
-      const isValidUserBut = this.$route.query.isValidUserBut
-      if (isValidUserBut) {
-        this.callSetIsValidUserBut(isValidUserBut)
-      } else {
-        this.callResetIsValidUserBut()
-      }
+  data() {
+    return {
+      web3Provider: null,
+      web3: null,
+      account: null,
+      contracts: {},
+      ownProperties: [],
+      propertiesForSell: [],
+      ownAuctions: [
+        {fingerprint: 'xyz', title: 'title 1', minPrice: 2, highestOffer: 1.5},
+        {fingerprint: 'xyzy', title: 'title 2', minPrice: 3, highestOffer: 4},
+      ],
+      auctions: [
+        {fingerprint: 'sdgfsf', title: 'title 3', minPrice: 2, highestOffer: 1},
+        {fingerprint: 'fdgsdfg', title: 'title 4', minPrice: 1, highestOffer: 2},
+        {fingerprint: 'rdgthxyz', title: 'title 5', minPrice: 1.5, highestOffer: 6},
+        {fingerprint: 'xyhgfhhzy', title: 'title 6', minPrice: 3.2, highestOffer: 5},
+        {fingerprint: 'xdfgfgyz', title: 'title 7', minPrice: 2.5, highestOffer: 2},
+        {fingerprint: 'xyzloly', title: 'title 8', minPrice: 6, highestOffer: 4},
+      ]
     }
-  },
-  beforeCreate: function () {
-    this.$store.dispatch(ACTION_TYPES.REGISTER_WEB3_INSTANCE)
-      .then((result) => {
-        let state = result.state
-        monitorWeb3(state)
-        this.$store.dispatch(ACTION_TYPES.UPDATE_USER_BLOCKCHAIN_STATUS)
-          .then(() => {
-            if (!(this.isDAppReady)) {
-              this.forcedIsValidUserBut = '0'
-              this.$store.dispatch(ACTION_TYPES.UPDATE_DAPP_READINESS, true)
-            }
-          })
-          .catch(() => {
-            console.log('Unable to UPDATE_USER_BLOCKCHAIN_STATUS')
-            if (!(this.isDAppReady)) {
-              this.$store.dispatch(ACTION_TYPES.UPDATE_DAPP_READINESS, true)
-            }
-          })
-      })
-      .catch((result = {}) => {
-        let state = result.state
-        this.forcedIsValidUserBut = '0'
-        monitorWeb3(state)
-        if (!(this.isDAppReady)) {
-          this.$store.dispatch(ACTION_TYPES.UPDATE_DAPP_READINESS, true)
-        }
-
-        console.error(result, 'Unable to REGISTER_WEB3_INSTANCE')
-      })
-  },
-  created: function () {
-    this[ACTION_TYPES.CHANGE_CURRENT_ROUTE_TO](this.$route)
-    this[ACTION_TYPES.SET_CURRENT_VIEW](this.$route)
   },
   methods: {
-    ...mapActions([
-      ACTION_TYPES.CHANGE_CURRENT_ROUTE_TO,
-      ACTION_TYPES.UPDATE_USER_GRAVATAR,
-      ACTION_TYPES.SET_IS_VALID_USER_BUT,
-      ACTION_TYPES.RESET_IS_VALID_USER_BUT,
-      ACTION_TYPES.SET_CURRENT_VIEW,
-      ACTION_TYPES.LOGIN
-    ]),
-    callUpdateUserGravatar (payload = null) {
-      this[ACTION_TYPES.UPDATE_USER_GRAVATAR](payload)
-    },
-    callToWriteUser (payload = null) {
-      const actionParams = Object.assign({}, payload.requestParams, {
-        methodName: payload.methodName,
-        contractIndexToUse: payload.contractIndexToUse
-      })
-      this.managers[payload.managerIndex || 'UserManager'].accessBlockchain(this.$store.state, actionParams)
-        .then((userData) => {
-          this[ACTION_TYPES.LOGIN]({
-            userObject: payload.vueObject
-          })
-            .then(() => {
-              if (payload.callback) payload.callback(userData)
-            })
-            .catch(error => {
-              console.error('Unable to perform login action: ' + error)
-            });
-        })
-        .catch((error) => {
-          if (payload.callback) payload.callback()
-          console.error('Unable to write user data: ' + error)
-        })
-    },
-    callSetIsValidUserBut (newValue) {
-      this[ACTION_TYPES.SET_IS_VALID_USER_BUT](newValue)
-    },
-    callResetIsValidUserBut () {
-      this[ACTION_TYPES.RESET_IS_VALID_USER_BUT]()
-    },
-    callToAccessBlockchain (payload = null) {
-      const actionParams = Object.assign({}, payload.requestParams, {
-        methodName: payload.methodName,
-        contractIndexToUse: payload.contractIndexToUse
-      })
-      const value = payload.value
-      this.managers[payload.managerIndex || 'UserManager'].accessBlockchain(this.$store.state, actionParams, value)
-        .then((responseObject) => {
-          if (payload.callback) payload.callback(responseObject)
-        })
-        .catch((err) => {
-          if (payload.callback) payload.callback(false)
-          console.error(err, `Unable to ${payload.methodName}. You may not need to pay any attention to this error. A page load on Sign Up may throw this error, but everything is fine.`)
-        })
-    },
-    logUserIn (evt = null) {
-      if (!this.user.isLoggedIn) {
-        this.$root.callToAccessBlockchain({
-          requestParams: {},
-          contractIndexToUse: 'UserAuthManager',
-          methodName: 'login',
-          managerIndex: 'UserManager',
-          callback: (isUserExists = false) => {
-            if (evt) evt.target.disabled = false
-            if (isUserExists) {
-              UserManager.promisifyUserData(this.$store.state)
-                .then((userObject) => {
-                  this.$store.dispatch(ACTION_TYPES.LOGIN, {
-                    userObject
-                  })
-                    .then(() => {
-                      console.log('LOGIN Successful', this.user.isLoggedIn)
-                      if (this.user.isLoggedIn) this.$router.push('/dashboard')
-                      else this.$router.push('/home')
-                    })
-                    .catch(() => {
-                      console.log('Unable to LOGIN')
-                      if (!(this.isDAppReady)) {
-                        this.$store.dispatch(ACTION_TYPES.UPDATE_DAPP_READINESS, true)
-                      }
-                    })
-                })
-                .catch((result = {}) => {
-                  console.error(result, 'Unable to fetch User Data')
-                  if (result.isValid) {
-                    this.$store.dispatch(ACTION_TYPES.INITIALISE_IS_VALID_USER_BUT, result.warningMessage)
-                      .then(() => {
-                        if (!(this.isDAppReady)) {
-                          this.$store.dispatch(ACTION_TYPES.UPDATE_DAPP_READINESS, true)
-                        }
-                      })
-                      .catch(() => {
-                        console.log('Unable to INITIALISE_IS_VALID_USER_BUT')
-                        if (!(this.isDAppReady)) {
-                          this.$store.dispatch(ACTION_TYPES.UPDATE_DAPP_READINESS, true)
-                        }
-                      })
-                  } else {
-                    if (!(this.isDAppReady)) {
-                      this.$store.dispatch(ACTION_TYPES.UPDATE_DAPP_READINESS, true)
-                    }
-                  }
-                })
-            } else {
-              this.$router.push('/')
-            }
-          }
-        })
-      } else {
-        if (evt) evt.target.disabled = false
+    async initWeb3() {
+      if (window.ethereum) {
+        this.web3Provider = window.ethereum;
+        try {
+          // Request account access
+          await window.ethereum.enable();
+        } catch (error) {
+          // User denied account access...
+          console.error("User denied account access");
+        }
       }
+      // Legacy dapp browsers...
+      else if (window.web3) {
+        this.web3Provider = window.web3.currentProvider;
+      }
+      // If no injected web3 instance is detected, fall back to Ganache
+      else {
+        this.web3Provider = new Web3.providers.HttpProvider(
+          "http://localhost:7545"
+        );
+      }
+      web3 = new Web3(this.web3Provider);
     },
-    logUserOut (evt = null) {
-      this.$store.dispatch(ACTION_TYPES.LOGOUT)
-        .then(() => {
-          if (evt) evt.target.disabled = false
-          this.$router.push('/')
+    async initContract() {
+      // Get the necessary contract artifact file and instantiate it with @truffle/contract
+      await $.getJSON("/static/PropertiesDB.json", (data) => {
+        this.contracts.propertiesDB = TruffleContract(data);
+        this.contracts.propertiesDB.setProvider(this.web3Provider);
+      });
+    },
+    initAddress() {
+      web3.eth.getAccounts((error, accounts) => {
+        this.account = accounts[0]
+        if (error) {
+          console.log(error);
+        }
+      });
+    },
+    calculateFingerprint(file, title) {
+      const baseURI = 'http://localhost:3000/';
+      var formData = new FormData();
+      formData.append("song", file);
+
+      this.$http.post(baseURI, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
+        }).then(data => {
+          const fingerprint = data.data.data.fingerprint;
+          let ipDb;
+          const account = this.$root.$data.account;
+          this.contracts.propertiesDB.deployed().then((instance) => {
+            return instance.addProperty(fingerprint, title, { from: account });
+          }).then((result) => {
+            this.fetchProperties();
+          }).catch((error) => {
+              console.log(error);
+            });
+        });
+    },
+    fetchProperties() {
+      this.contracts.propertiesDB.deployed().then((instance)  => {
+        return instance.fetchProperties({ from: this.account })
+      }).then((result) => {
+          this.ownProperties = result;
         })
-    }
+    },
+    fetchPropertiesForSale() {
+      this.contracts.propertiesDB.deployed().then((instance)  => {
+        return instance.fetchPropertiesForSale({ from: this.account })
+      }).then((result) => {
+          this.propertiesForSell = result;
+        })
+    },
+    async buyProperty(fingerprint, price) {
+      await this.contracts.propertiesDB.deployed().then(async (instance)  => {
+        return await instance.buyProperty(fingerprint, { from: this.account, value: price });
+      })
+    },
+    async offerPropertyForSale(fingerprint, price) {
+      await this.contracts.propertiesDB.deployed().then(async (instance)  => {
+        return await instance.offerPropertyForSale(fingerprint, price, { from: this.account })
+      })
+    },
   },
-  template: '<App :is-d-app-ready="isDAppReady" :current-view="currentView" :is-valid-user-but="isValidUserBut" @log-user-in="logUserIn" @log-user-out="logUserOut" />'
+  template: '<App />'
 })

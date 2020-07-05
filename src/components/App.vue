@@ -1,70 +1,47 @@
 <template>
   <div id="app">
-    <router-view
-      :is-d-app-ready="isDAppReady"
-      :current-view="currentView"
-      :is-valid-user-but="isValidUserBut"
-      @log-user-in="logUserIn"
-      @log-user-out="logUserOut"
-    />
+    <md-app class="md-app">
+      <md-app-drawer md-permanent="full" class="header">
+        <md-toolbar  md-elevation="0">
+          <span class="md-title" @click="$router.push({ path: '/' })">Blockchain Copyright Manager</span>
+        </md-toolbar>
+
+        <md-list>
+          <md-list-item @click="$router.push({ path: '/properties' })">
+            <md-icon>audiotrack</md-icon>
+            <span class="md-list-item-text">My IPs</span>
+          </md-list-item>
+
+          <md-list-item @click="$router.push({ path: '/market' })">
+            <md-icon>storefront</md-icon>
+            <span class="md-list-item-text">IP Market</span>
+          </md-list-item>
+
+          <md-list-item @click="$router.push({ path: '/auctions' })">
+            <md-icon>connect_without_contact</md-icon>
+            <span class="md-list-item-text">IP Auction House</span>
+          </md-list-item>
+        </md-list>
+      </md-app-drawer>
+
+      <md-app-content>
+        <router-view />
+      </md-app-content>
+    </md-app>    
   </div>
 </template>
 
 <script>
 export default {
   name: 'App',
-  props: {
-    isDAppReady: {
-      type: Boolean,
-      default: false
-    },
-    currentView: {
-      type: Object,
-      default: null
-    },
-    isValidUserBut: {
-      type: String,
-      default: '0'
-    }
-  },
-  methods: {
-    logUserIn (evt) {
-      this.$emit('log-user-in', evt)
-    },
-    logUserOut (evt) {
-      this.$emit('log-user-out', evt)
-    }
-  }
 }
-
 </script>
 
 <style>
-  html {
-    background: #eef0ef;
-  }
-
-  body {
-    margin: 0;
-    width: 100%;
-  }
-
-  * {
-    box-sizing: border-box;
-  }
-
-  textarea {
-    resize: none;
-  }
-
-  #app {
-    font-family: 'Avenir', Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    color: #2c3e50;
-    width: 100%;
-    /*max-width: 960px;*/
-    min-width: 1020px;
-    margin: auto;
-  }
+.md-app {
+  height: 100vh;
+}
+.md-toolbar {
+  background-color: #03DAC6 !important;
+}
 </style>
