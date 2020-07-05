@@ -23,6 +23,122 @@ contract PropertiesDB {
     string[] propertiesForSale;
     mapping (string => uint) salePrices;
 
+
+    struct AuctionEntry {
+        string fingerprint;
+        uint startPrice;
+        uint highestOffer;
+        address payable highestBidder;
+        address payable beneficiary;
+        bool ended;
+        uint endTime;
+    }
+
+    //fingerprints that are in an auction
+    string[] auctionFingerprints;
+    //fingerprint -> AuctionEntry
+    mapping (string => AuctionEntry) auctions;
+
+    /* Auctions */
+    function endAuction(string memory _fingerprint) public {
+        require(now >= auctions[_fingerprint].endTime, "Auction not expired yet");
+        require(auctions[_fingerprint].ended == false, "Auction already ended");
+        auctions[_fingerprint].ended = true;
+        address payable oldowner = auctions[_fingerprint].beneficiary;
+        oldowner.transfer(auctions[_fingerprint].highestOffer);
+        //switch owners
+        //add to new owner properties list
+        properties[auctions[_fingerprint].highestBidder].push(getProperty(_fingerprint));
+        //remove from old owners list
+        deleteFromProperties(_fingerprint, oldowner);
+        //remove from the map auctions (set endTime to 0 - because thats how we check if auction exists)
+        auctions[_fingerprint].endTime = 0;
+        //remove from auctionFingerprints
+        for(uint i = 0;i<auctionFingerprints.length;i++){
+            if(areStringsEqual(auctionFingerprints[i],_fingerprint)){
+                //if we found a matching entry - remove it .
+                if(auctionFingerprints.length>1){
+                    //swap position with last element
+                    auctionFingerprints[i] = auctionFingerprints[auctionFingerprints.length-1];
+                }
+                //drop last element
+                auctionFingerprints.pop();
+                break;
+            }
+        }
+    }
+    function bid (string memory _fingerprint) public payable {
+        require(auctions[_fingerprint].ended == false, "Auction does not exist or is finished");
+        require(auctions[_fingerprint].endTime > now, "Auction expired");
+        require(auctions[_fingerprint].beneficiary != msg.sender, "The owner can not bid");
+        require(msg.value > auctions[_fingerprint].startPrice, "The bid should be higher than the start price");
+        require(msg.value > auctions[_fingerprint].highestOffer, "The bid should be bigger than the highest offer");
+        
+        // return the money to the previous bidder 
+        if(auctions[_fingerprint].highestOffer != 0){
+            auctions[_fingerprint].highestBidder.transfer(auctions[_fingerprint].highestOffer);
+        }
+        
+        // bid
+        auctions[_fingerprint].highestOffer = msg.value;
+        auctions[_fingerprint].highestBidder = msg.sender;
+    }
+    //displays callers auctions
+    function getOwnAuctions() public view returns (AuctionEntry[] memory){
+        uint count = 0;
+        for (uint i = 0; i < auctionFingerprints.length; i++) {
+            if (auctions[auctionFingerprints[i]].beneficiary==msg.sender) {
+                count++;
+            }
+        }
+        AuctionEntry[] memory result = new AuctionEntry[](count);
+        for (uint i = 0; i < auctionFingerprints.length; i++) {
+            if (auctions[auctionFingerprints[i]].beneficiary==msg.sender) {
+                count--;
+                result[count] = auctions[auctionFingerprints[i]];
+            }
+        }
+        return result;
+    }
+
+    function getOtherAuctions() public view returns (AuctionEntry[] memory){
+        uint count = 0;
+        for (uint i = 0; i < auctionFingerprints.length; i++) {
+            if (auctions[auctionFingerprints[i]].beneficiary!=msg.sender) {
+                count++;
+            }
+        }
+        AuctionEntry[] memory result = new AuctionEntry[](count);
+        for (uint i = 0; i < auctionFingerprints.length; i++) {
+            if (auctions[auctionFingerprints[i]].beneficiary!=msg.sender) {
+                count--;
+                result[count] = auctions[auctionFingerprints[i]];
+            }
+        }
+        return result;
+    }
+
+    function createAuction(string memory _fingerprint, uint _startPrice, uint _duration) public {
+        require(_startPrice >= 0, "starting price cannot be negative");
+        require(_duration>0, "Auction duration need to larger than zero");
+        //check if property exists
+        require(isPropertyPresent(_fingerprint), "Property doesnt exists in the database!");
+        //check if its already sellings somewhere
+        require(!isPropertyForSale(_fingerprint), "This property is already for sale");
+        require(isOwner(_fingerprint,msg.sender),"Only owner can start an auction");
+
+        //store auction
+        auctionFingerprints.push(_fingerprint);
+
+        auctions[_fingerprint].fingerprint = _fingerprint;
+        auctions[_fingerprint].startPrice = _startPrice;
+        auctions[_fingerprint].highestOffer = 0;
+        auctions[_fingerprint].highestBidder = address(0x0);
+        auctions[_fingerprint].beneficiary = msg.sender;
+        auctions[_fingerprint].ended = false;
+        auctions[_fingerprint].endTime = now + _duration; //TODO googly why its not safe
+    }
+
     /* Actions on the database */
 
     function addProperty (string memory _fingerprint, string memory _title) public {
