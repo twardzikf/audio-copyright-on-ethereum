@@ -34,7 +34,8 @@ new Vue({
       console.log(`Buy ip ${fingerprint}`)
     })
     this.$root.$on('offer-ip-for-sell', (data) => {
-      console.log(`Offer ip for sell ${data.fingerprint} for how much? ${data.price}`)
+      console.log(`Offer ip for sell ${data.fingerprint} for: ${data.price}`)
+      this.offerIpForSell(data.fingerprint, data.price);
     })
     this.$root.$on('add-fingerprint', (file, title) => {
       console.log(`add fingerpint`)
@@ -134,13 +135,23 @@ new Vue({
     },
     fetchProperties: function () {
       this.$root.$data.contracts.propertiesDB
-      .deployed()
+        .deployed()
         .then(function (instance) {
           return instance.fetchProperties({ from: this.$root.$data.account })
         }.bind(this))
         .then(function (result) {
           this.$root.$data.ownProperties = result;
         }.bind(this))
+    },
+    offerIpForSell: function (fingerpint, price) {
+      this.$root.$data.contracts.propertiesDB
+        .deployed()
+        .then(function (instance) {
+          return instance.offerPropertyForSale(fingerpint, price, { from: this.$root.$data.account })
+        }.bind(this))
+        .then(function (result) {
+          console.log(result);
+        });
     }
   },
   template: '<App />'
