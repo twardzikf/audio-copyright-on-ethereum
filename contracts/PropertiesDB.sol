@@ -37,11 +37,18 @@ contract PropertiesDB {
     }
 
     function fetchPropertiesForSale() public view returns (PropertyForSaleDTO[] memory) {
-        uint propertiesForSaleLength = propertiesForSale.length;
-        PropertyForSaleDTO[] memory _propertiesForSale = new PropertyForSaleDTO[](propertiesForSaleLength); //specify exact array length
+        uint propertiesForSaleWithoutOwnLength = 0;
         for (uint i = 0; i < propertiesForSale.length; i++) {
             if (!isOwner(propertiesForSale[i], msg.sender)) {
-                _propertiesForSale[i] = createPropertyForSaleDto(propertiesForSale[i]);
+                propertiesForSaleWithoutOwnLength++;
+            }
+        }
+        PropertyForSaleDTO[] memory _propertiesForSale = new PropertyForSaleDTO[](propertiesForSaleWithoutOwnLength);
+        uint j = 0;
+        for (uint i = 0; i < propertiesForSale.length; i++) {
+            if (!isOwner(propertiesForSale[i], msg.sender)) {
+                _propertiesForSale[j] = createPropertyForSaleDto(propertiesForSale[i]);
+                j++;
             }
         }
         return _propertiesForSale;
