@@ -48,6 +48,18 @@ new Vue({
       contracts: {},
       ownProperties: [],
       propertiesForSell: [],
+      ownAuctions: [
+        {fingerprint: 'xyz', title: 'title 1', minPrice: 2, highestOffer: 1.5},
+        {fingerprint: 'xyzy', title: 'title 2', minPrice: 3, highestOffer: 4},
+      ],
+      auctions: [
+        {fingerprint: 'sdgfsf', title: 'title 3', minPrice: 2, highestOffer: 1},
+        {fingerprint: 'fdgsdfg', title: 'title 4', minPrice: 1, highestOffer: 2},
+        {fingerprint: 'rdgthxyz', title: 'title 5', minPrice: 1.5, highestOffer: 6},
+        {fingerprint: 'xyhgfhhzy', title: 'title 6', minPrice: 3.2, highestOffer: 5},
+        {fingerprint: 'xdfgfgyz', title: 'title 7', minPrice: 2.5, highestOffer: 2},
+        {fingerprint: 'xyzloly', title: 'title 8', minPrice: 6, highestOffer: 4},
+      ]
     }
   },
   methods: {
