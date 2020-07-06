@@ -16,7 +16,6 @@ contract PropertiesDB {
         uint price;
     }
 
-
     address[] propertyOwners;
     mapping (address => Property[]) properties;
 
@@ -30,7 +29,7 @@ contract PropertiesDB {
         uint highestOffer;
         address payable highestBidder;
         address payable beneficiary;
-        bool ended;
+        bool running;
         uint endTime;
     }
 
@@ -42,8 +41,8 @@ contract PropertiesDB {
     /* Auctions */
     function endAuction(string memory _fingerprint) public {
         require(now >= auctions[_fingerprint].endTime, "Auction not expired yet");
-        require(auctions[_fingerprint].ended == false, "Auction already ended");
-        auctions[_fingerprint].ended = true;
+        require(auctions[_fingerprint].running == true, "Auction already ended");
+        auctions[_fingerprint].running = false;
         address payable oldowner = auctions[_fingerprint].beneficiary;
         oldowner.transfer(auctions[_fingerprint].highestOffer);
         //switch owners
@@ -68,10 +67,10 @@ contract PropertiesDB {
         }
     }
     function bid (string memory _fingerprint) public payable {
-        require(auctions[_fingerprint].ended == false, "Auction does not exist or is finished");
+        require(auctions[_fingerprint].running == true, "Auction does not exist or is finished");
         require(auctions[_fingerprint].endTime > now, "Auction expired");
         require(auctions[_fingerprint].beneficiary != msg.sender, "The owner can not bid");
-        require(msg.value > auctions[_fingerprint].startPrice, "The bid should be higher than the start price");
+        require(msg.value >= auctions[_fingerprint].startPrice, "The bid should be higher than the start price");
         require(msg.value > auctions[_fingerprint].highestOffer, "The bid should be bigger than the highest offer");
         
         // return the money to the previous bidder 
@@ -121,6 +120,7 @@ contract PropertiesDB {
     function createAuction(string memory _fingerprint, uint _startPrice, uint _duration) public {
         require(_startPrice >= 0, "starting price cannot be negative");
         require(_duration>0, "Auction duration need to larger than zero");
+        require(auctions[_fingerprint].running == false, "Auction already started");
         //check if property exists
         require(isPropertyPresent(_fingerprint), "Property doesnt exists in the database!");
         //check if its already sellings somewhere
@@ -131,7 +131,7 @@ contract PropertiesDB {
         auctionFingerprints.push(_fingerprint);
         
         AuctionEntry memory auction = AuctionEntry(_fingerprint, _startPrice * 1000000000000000000, 0, 
-        address(0x0), msg.sender, false, now + _duration);
+        address(0x0), msg.sender, true, now + _duration);
         auctions[_fingerprint] = auction;
     }
 
