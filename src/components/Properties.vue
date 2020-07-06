@@ -23,7 +23,10 @@
         <md-table-row>
           <md-table-head md-numeric>#</md-table-head>
           <md-table-head>Name</md-table-head>
-          <md-table-head>Fingerprint</md-table-head>
+          <md-table-head>
+            Fingerprint
+            <!-- <md-icon>fingerprint</md-icon> -->
+            </md-table-head>
           <md-table-head></md-table-head>
         </md-table-row>
         <md-table-row
