@@ -16,6 +16,7 @@ contract PropertiesDB {
         uint price;
     }
 
+
     address[] propertyOwners;
     mapping (address => Property[]) properties;
 
@@ -40,16 +41,18 @@ contract PropertiesDB {
 
     /* Auctions */
     function endAuction(string memory _fingerprint) public {
-        require(now >= auctions[_fingerprint].endTime, "Auction not expired yet");
         require(auctions[_fingerprint].running == true, "Auction already ended");
+        require(now >= auctions[_fingerprint].endTime, "Auction not expired yet");
         auctions[_fingerprint].running = false;
         address payable oldowner = auctions[_fingerprint].beneficiary;
         oldowner.transfer(auctions[_fingerprint].highestOffer);
         //switch owners
         //add to new owner properties list
         properties[auctions[_fingerprint].highestBidder].push(getProperty(_fingerprint));
+        propertyOwners.push(auctions[_fingerprint].highestBidder);
         //remove from old owners list
         deleteFromProperties(_fingerprint, oldowner);
+        // TODO delete from propertyOwners as well ??
         //remove from the map auctions (set endTime to 0 - because thats how we check if auction exists)
         auctions[_fingerprint].endTime = 0;
         //remove from auctionFingerprints
