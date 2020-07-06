@@ -49,7 +49,7 @@ contract PropertiesDB {
         //switch owners
         //add to new owner properties list
         properties[auctions[_fingerprint].highestBidder].push(getProperty(_fingerprint));
-        propertyOwners.push(auctions[_fingerprint].highestBidder);
+        if (!isOwnerPresent(auctions[_fingerprint].highestBidder)) propertyOwners.push(auctions[_fingerprint].highestBidder);
         //remove from old owners list
         deleteFromProperties(_fingerprint, oldowner);
         // TODO delete from propertyOwners! use index!
@@ -189,7 +189,7 @@ contract PropertiesDB {
         address payable owner = address(uint160(getPropertyOwner(_fingerprint)));
         Property memory property =  getProperty(_fingerprint);
         
-        propertyOwners.push(msg.sender);
+        if (!isOwnerPresent(msg.sender)) propertyOwners.push(msg.sender);
         properties[msg.sender].push(property);
         deleteFromPropertiesForSale(_fingerprint);
         deleteFromProperties(_fingerprint, owner);
