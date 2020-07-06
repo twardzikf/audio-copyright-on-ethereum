@@ -52,7 +52,8 @@ contract PropertiesDB {
         propertyOwners.push(auctions[_fingerprint].highestBidder);
         //remove from old owners list
         deleteFromProperties(_fingerprint, oldowner);
-        // TODO delete from propertyOwners as well ??
+        // TODO delete from propertyOwners! use index!
+        
         //remove from the map auctions (set endTime to 0 - because thats how we check if auction exists)
         auctions[_fingerprint].endTime = 0;
         //remove from auctionFingerprints
@@ -187,13 +188,14 @@ contract PropertiesDB {
         uint price = getPropertyPrice(_fingerprint);
         address payable owner = address(uint160(getPropertyOwner(_fingerprint)));
         Property memory property =  getProperty(_fingerprint);
-
+        
+        propertyOwners.push(msg.sender);
         properties[msg.sender].push(property);
         deleteFromPropertiesForSale(_fingerprint);
         deleteFromProperties(_fingerprint, owner);
+        // TODO: delete from propertyOwners! use index to avoid loops!
         owner.transfer(price);
     }
-
 
 
     /* Queries on the database */
