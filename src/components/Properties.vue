@@ -34,21 +34,21 @@
           <md-table-cell>{{ property.title }}</md-table-cell>
           <md-table-cell>{{ property.fingerprint | truncate(20, '...') }}</md-table-cell>
           <md-table-cell>
-            <md-button class="md-raised" @click="isDialogActive = true">
+            <md-button class="md-raised" @click="openDialog(property.fingerprint)">
                 Offer for sell
             </md-button>
           </md-table-cell>
-          <md-dialog-prompt
-            :md-active.sync="isDialogActive"
-            md-title="Set price for your IP"
-            md-input-maxlength="15"
-            md-input-placeholder=""
-            md-confirm-text="Offer for sell" 
-            @md-confirm="onConfirmOfferForSell(...arguments, property.fingerprint)"
-          />
         </md-table-row>
       </md-table>
     </div>
+    <md-dialog-prompt
+      :md-active.sync="isDialogActive"
+      md-title="Set price for your IP"
+      md-input-maxlength="15"
+      md-input-placeholder=""
+      md-confirm-text="Offer for sell" 
+      @md-confirm="onConfirmOfferForSell"
+    />
   </div>
 </template>
 <script>
@@ -59,6 +59,7 @@ export default {
       file: null,
       title: '',
       isDialogActive: false,
+      selectedFingerprint: '',
     };
   },
   computed: {
@@ -67,11 +68,16 @@ export default {
     },
   },
   methods: {
+    openDialog(fingerprint) {
+      this.selectedFingerprint = fingerprint;
+      console.log(this.selectedFingerprint);
+      this.isDialogActive = true;
+    },
     getFileBytesArray(event) {
       this.file = event.target.files[0];
     },
-    onConfirmOfferForSell(value, fingerprint) {
-      this.$root.$emit('offer-ip-for-sell', { fingerprint: fingerprint, price: value })
+    onConfirmOfferForSell(value) {
+      this.$root.$emit('offer-ip-for-sell', { fingerprint: this.selectedFingerprint, price: value })
     },
   }
 };
