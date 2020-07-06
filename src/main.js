@@ -34,6 +34,7 @@ new Vue({
     await this.initAddress();
     this.fetchProperties();
     this.fetchPropertiesForSale();
+    this.fetchAllAuctions();
 
     this.$root.$on('connect-to-account', () => {})
     this.$root.$on('buy-ip', async (fingerprint, price) => {
@@ -50,15 +51,15 @@ new Vue({
     this.$root.$on('change-property-to-sell', ({fingerprint, minPrice, expiry}) => {
       console.log('change-property-to-sell');
       console.log(fingerprint + ' ' + minPrice + ' ' + expiry);
-      
+    })
+    this.$root.$on('create-auction', ({fingerprint, minPrice, expires}) => {
+      this.createAuction(fingerprint, minPrice, expires);
     })
     this.$root.$on('remove-from-to-sell', (fingerprint) => {
-      console.log('remove-from-to-sell');
-      console.log(fingerprint);
-      
+      this.endAuction(fingerprint);
     })
     this.$root.$on('make-offer', ({fingerprint, offerValue}) => {
-      console.log('make-offer, value: ' + offerValue);
+      this.makeOffer(fingerprint, offerValue);
     })
   },
   data() {
@@ -69,17 +70,8 @@ new Vue({
       contracts: {},
       ownProperties: [],
       propertiesForSell: [],
-      ownAuctions: [
-        {fingerprint: 'xyz', title: 'title 1', minPrice: 2, highestOffer: 1.5, expiry: '10.07.2020'},
-        {fingerprint: 'xyzy', title: 'title 2', minPrice: 3, highestOffer: 4, expiry: '10.07.2020'},
-      ],
+      ownAuctions: [],
       auctions: [
-        {fingerprint: 'sdgfsf', title: 'title 3', minPrice: 2, highestOffer: 1, expiry: '10.07.2020'},
-        {fingerprint: 'fdgsdfg', title: 'title 4', minPrice: 1, highestOffer: 2, expiry: '10.07.2020'},
-        {fingerprint: 'rdgthxyz', title: 'title 5', minPrice: 1.5, highestOffer: 6, expiry: '10.07.2020'},
-        {fingerprint: 'xyhgfhhzy', title: 'title 6', minPrice: 3.2, highestOffer: 5, expiry: '10.07.2020'},
-        {fingerprint: 'xdfgfgyz', title: 'title 7', minPrice: 2.5, highestOffer: 2, expiry: '10.07.2020'},
-        {fingerprint: 'xyzloly', title: 'title 8', minPrice: 6, highestOffer: 4, expiry: '10.07.2020'},
       ]
     }
   },
@@ -172,6 +164,46 @@ new Vue({
       await this.contracts.propertiesDB.deployed().then(async (instance)  => {
         return await instance.offerPropertyForSale(fingerprint, price, { from: this.account })
       })
+    },
+    async makeOffer(fingerprint, price) {
+      await this.contracts.propertiesDB.deployed().then( async (instance) => {
+        return await instance.bid(fingerprint, {from: this.account, value: price})
+      })
+    },
+    async createAuction(fingerprint, startPrice, endDate) {
+      const now = Date.now();
+      const endDateObj = new Date(endDate);
+      const end = endDateObj.getTime();
+      await this.contracts.propertiesDB.deployed().then( async (instance) => {
+        return await instance.createAuction(fingerprint, startPrice, (end - now), {from: this.account})
+      }).then(() => {
+        this.fetchAllAuctions();
+      })
+    },
+    async endAuction(fingerprint) {
+      await this.contracts.propertiesDB.deployed().then( async (instance) => {
+        return await instance.endAuction(fingerprint, {from: this.account})
+      }).then(() => {
+        this.fetchAllAuctions();
+      })
+    },
+    async fetchOwnAuctions() {
+      await this.contracts.propertiesDB.deployed().then(async (instance)  => {
+        return await instance.getOwnAuctions({ from: this.account });
+      }).then((result) => {
+        this.ownAuctions = result;
+      })
+    },
+    async fetchOtherAuctions() {
+      await this.contracts.propertiesDB.deployed().then(async (instance)  => {
+        return await instance.getOtherAuctions({ from: this.account });
+      }).then((result) => {
+        this.otherAuctions = result;
+      })
+    },
+    async fetchAllAuctions() {
+      await this.fetchOwnAuctions();
+      await this.fetchOtherAuctions();
     },
   },
   template: '<App />'
