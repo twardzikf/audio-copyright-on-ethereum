@@ -34,7 +34,7 @@ contract Property {
 
     function buy (address payable buyer) public payable fromTrustedContract{
         require(buyer!=owner, "Owner cannot be Buyer");
-        require(isForSale, "Item is not for sell");
+        require(isForSale, "Item is not for sale");
         require(price <= msg.value, "Insuficient funds recieved");
         isForSale = false;
         owner.transfer(msg.value); //transfer funds to the previous owner
@@ -49,19 +49,16 @@ contract Property {
 
     function stopSelling() public fromTrustedContract{
         isForSale = false;
+        price = 0;
     }
 
     function setOwnersIndex(uint newIndex) public fromTrustedContract{
         ownersIndex = newIndex;
     }
+    
+    function forSale(bool _forSale, address payable _owner) public fromTrustedContract {
+        require(_owner == owner, "Only owner can change the status");
+        isForSale = _forSale;
+    }
 
 }
-//for testing
-/* contract MaliciousContract {
-    //test - trying to start selling some property without beeing owner
-    function startSellingOfSomeonesHash(address prop) public  {
-        Property p = Property(address(prop));
-        p.startSelling(1,1);
-    }
-} */
-

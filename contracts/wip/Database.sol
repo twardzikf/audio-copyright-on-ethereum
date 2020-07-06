@@ -2,6 +2,7 @@
 pragma solidity 0.5.16;
 
 import  './Property.sol';
+import  './Auction.sol';
 
 contract Database {
 
@@ -11,6 +12,9 @@ contract Database {
     mapping(string => address) public hashDatabase;
     // stores properties that are for sale - to avoid loops
     Property[] itemsForSale;
+    
+    mapping(string => Auction) public hashToAuction;
+    Auction[] auctions;
 
 
     //displays selling properties
@@ -53,6 +57,13 @@ contract Database {
         //list.length--;
         list.pop();
     }
+    
+    function removeAuction(Auction[] storage list, uint index) private {
+        if (list.length > 1) {
+            list[index] = list[list.length-1];
+        }
+        list.pop();
+    }
 
     function startSellingProperty(string memory _hash, uint price) public  {
         require(hashDatabase[_hash]!=address(0x0),"Hash doesnt exist");
@@ -79,9 +90,49 @@ contract Database {
        Property p = Property(address(hashDatabase[_hash]));
        return p.owner();
     }
-
+    
     function getMyProperties() public view returns (Property[] memory) {
         require(ownerToHashes[msg.sender].length!=0,"Owner has no posessions");
         return ownerToHashes[msg.sender];
+    }
+    
+    function startAuction(string memory _hash, uint price) public {
+        require(price >= 0, "Price can not be negative");
+        require(hashDatabase[_hash]!=address(0x0),"Hash doesnt exist");
+        Property p = Property(address(hashDatabase[_hash]));
+        require(p.isForSale()==false,"Property already for sale!");
+        require(p.owner()==msg.sender, "Only owner can start an auction");
+        
+        // check if the auction has already been started
+        //require(!hashToAuction[_hash].running(), "Auction was already started");
+        
+        p.forSale(true, msg.sender);
+        // create a new action
+        Auction auction = new Auction();
+        auction.start(p, msg.sender, price, auctions.length-1);
+        // put it in the list of auctions
+        hashToAuction[_hash] = auction;
+        auctions.push(auction);
+    }
+    
+    function bid(string memory _hash) public payable {
+        Auction auction = hashToAuction[_hash];
+        require(auction.running(), "There is no such auction running");
+        require(auction.owner() != msg.sender, "Owner can not bid");
+        require(msg.value > auction.highestOffer(), "The bid is too small");
+        
+        auction.bid(msg.value, msg.sender);
+    }
+    
+    function stopAuctoin(string memory _hash) public payable {
+        Auction auction = hashToAuction[_hash];
+        //require(auction.running(), "There is no such auction running");
+        require(auction.owner() == msg.sender, "Only owner can stop the auction");
+        
+        auction.stop();
+        removeAuction(auctions, auction.index());
+        // highest bidder buys the property 
+        Property p = Property(address(hashDatabase[_hash]));
+        p.buy.value(auction.highestOffer())(auction.highestBidder());
     }
 }
