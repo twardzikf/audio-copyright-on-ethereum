@@ -57,16 +57,16 @@ new Vue({
       ownProperties: [],
       propertiesForSell: [],
       ownAuctions: [
-        {fingerprint: 'xyz', title: 'title 1', minPrice: 2, highestOffer: 1.5},
-        {fingerprint: 'xyzy', title: 'title 2', minPrice: 3, highestOffer: 4},
+        {fingerprint: 'xyz', title: 'title 1', minPrice: 2, highestOffer: 1.5, expiry: '10.07.2020'},
+        {fingerprint: 'xyzy', title: 'title 2', minPrice: 3, highestOffer: 4, expiry: '10.07.2020'},
       ],
       auctions: [
-        {fingerprint: 'sdgfsf', title: 'title 3', minPrice: 2, highestOffer: 1},
-        {fingerprint: 'fdgsdfg', title: 'title 4', minPrice: 1, highestOffer: 2},
-        {fingerprint: 'rdgthxyz', title: 'title 5', minPrice: 1.5, highestOffer: 6},
-        {fingerprint: 'xyhgfhhzy', title: 'title 6', minPrice: 3.2, highestOffer: 5},
-        {fingerprint: 'xdfgfgyz', title: 'title 7', minPrice: 2.5, highestOffer: 2},
-        {fingerprint: 'xyzloly', title: 'title 8', minPrice: 6, highestOffer: 4},
+        {fingerprint: 'sdgfsf', title: 'title 3', minPrice: 2, highestOffer: 1, expiry: '10.07.2020'},
+        {fingerprint: 'fdgsdfg', title: 'title 4', minPrice: 1, highestOffer: 2, expiry: '10.07.2020'},
+        {fingerprint: 'rdgthxyz', title: 'title 5', minPrice: 1.5, highestOffer: 6, expiry: '10.07.2020'},
+        {fingerprint: 'xyhgfhhzy', title: 'title 6', minPrice: 3.2, highestOffer: 5, expiry: '10.07.2020'},
+        {fingerprint: 'xdfgfgyz', title: 'title 7', minPrice: 2.5, highestOffer: 2, expiry: '10.07.2020'},
+        {fingerprint: 'xyzloly', title: 'title 8', minPrice: 6, highestOffer: 4, expiry: '10.07.2020'},
       ]
     }
   },
@@ -138,16 +138,21 @@ new Vue({
           this.ownProperties = result;
         })
     },
-    fetchPropertiesForSale() {
+    fetchPropertiesForSale(callBack) {
       this.contracts.propertiesDB.deployed().then((instance)  => {
         return instance.fetchPropertiesForSale({ from: this.account })
       }).then((result) => {
           this.propertiesForSell = result;
+          if (typeof callBack !== 'undefined' && callBack != null) {
+            callBack();
+          }
         })
     },
     async buyProperty(fingerprint, price) {
       await this.contracts.propertiesDB.deployed().then(async (instance)  => {
         return await instance.buyProperty(fingerprint, { from: this.account, value: price });
+      }).then(() => {
+        this.fetchPropertiesForSale(this.fetchProperties);
       })
     },
     async offerPropertyForSale(fingerprint, price) {
