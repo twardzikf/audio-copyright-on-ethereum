@@ -20,15 +20,16 @@
           <md-table-cell>{{ auction.highestOffer }}</md-table-cell>
           <md-table-cell>{{ auction.expiry }}</md-table-cell>
           <md-table-cell>
-            <md-button class="md-icon-button" @click="isEditDialogActive = true">
+            <md-button class="md-icon-button" @click="openEditDialog(auction.fingerprint)">
               <md-icon>edit</md-icon>
             </md-button>
-            <md-button class="md-icon-button md-accent" @click="isRemoveDialogActive = true">
+            <md-button class="md-icon-button md-accent" @click="openRemoveDialog(auction.fingerprint)">
               <md-icon>delete</md-icon>
             </md-button>
           </md-table-cell>
-
-          <md-dialog :md-active.sync="isEditDialogActive">
+        </md-table-row>
+      </md-table>
+      <md-dialog :md-active.sync="isEditDialogActive">
             <md-dialog-title>Edit auction conditions</md-dialog-title>
             <div class="md-layout" style="margin-left: 1.5rem; margin-right: 1.5rem;">
               <md-field>
@@ -42,7 +43,7 @@
             </div>
             <md-dialog-actions>
               <md-button class="md-primary" @click="isEditDialogActive = false">Close</md-button>
-              <md-button class="md-primary" @click="onEditProperty(auction.fingerprint)">Save</md-button>
+              <md-button class="md-primary" @click="onEditProperty(this.editForm.fingerprint)">Save</md-button>
             </md-dialog-actions>
           </md-dialog>
 
@@ -55,12 +56,9 @@
             </div>
             <md-dialog-actions>
               <md-button class="md-primary" @click="isRemoveDialogActive = false">Close</md-button>
-              <md-button class="md-accent" @click="onRemoveFromToSell(auction.fingerprint)">Remove</md-button>
+              <md-button class="md-accent" @click="onRemoveFromToSell(this.removeForm.fingerprint)">Remove</md-button>
             </md-dialog-actions>
           </md-dialog>
-
-        </md-table-row>
-      </md-table>
     </div>
     <div class="section">
       <span class="title">Auctions:</span>
@@ -82,13 +80,27 @@
           <md-table-cell>{{ auction.highestOffer }}</md-table-cell>
           <md-table-cell>{{ auction.expiry }}</md-table-cell>
           <md-table-cell>
-            <md-button class="md-icon-button md-primary">
+            <md-button class="md-icon-button md-primary" @click="openOfferDialog(auction.fingerprint)">
               <md-icon md-src="/static/money-check-alt-solid.svg" />
               <md-tooltip md-direction="top">Make an offer</md-tooltip>
             </md-button>
           </md-table-cell>
         </md-table-row>
       </md-table>
+      <md-dialog :md-active.sync="isOfferDialogActive">
+            <md-dialog-title>Make an offer</md-dialog-title>
+            <div class="md-layout" style="margin-left: 1.5rem; margin-right: 1.5rem;">
+              <md-field>
+                <md-icon>attach_money</md-icon>
+                <label>Your offer</label>
+                <md-input type="number" v-model="this.offerForm.offerValue"></md-input>
+              </md-field>
+            </div>
+            <md-dialog-actions>
+              <md-button class="md-primary" @click="isOfferDialogActive = false">Close</md-button>
+              <md-button class="md-primary" @click="onMakeOffer(this.offerForm.fingerprint)">Save</md-button>
+            </md-dialog-actions>
+          </md-dialog>
     </div>
   </div>
 </template>
@@ -108,9 +120,18 @@ export default {
       isEditDialogActive: false,
       editForm: {
         minPrice: null,
-        expiry: null
+        expiry: null,
+        fingerprint: null
       },
       isRemoveDialogActive: false,
+      removeForm: {
+        fingerprint: null
+      },
+      isOfferDialogActive: false,
+      offerForm: {
+        fingerprint: null,
+        offerValue: null
+      }
     };
   },
   methods: {
@@ -123,6 +144,22 @@ export default {
     onRemoveFromToSell(fingerprint) {
       this.$root.$emit('remove-from-to-sell', {fingerprint: fingerprint});
       this.isRemoveDialogActive = false;
+    },
+    onMakeOffer(fingerprint) {
+      this.$root.$emit('make-offer', {fingerprint: fingerprint, offerValue: this.offerValue});
+      this.isRemoveDialogActive = false;
+    },
+    openRemoveDialog(fingerprint) {
+      this.isRemoveDialogActive = true;
+      this.removeForm.fingerprint = fingerprint;
+    },
+    openEditDialog(fingerprint) {
+      this.isEditDialogActive = true;
+      this.editForm.fingerprint = fingerprint;
+    },
+    openOfferDialog(fingerprint) {
+      this.isOfferDialogActive = true;
+      this.offerForm.fingerprint = fingerprint;
     }
   }
 };

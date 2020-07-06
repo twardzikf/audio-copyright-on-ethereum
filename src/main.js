@@ -52,6 +52,11 @@ new Vue({
     })
     this.$root.$on('remove-from-to-sell', (fingerprint) => {
       console.log('remove-from-to-sell');
+      console.log(fingerprint);
+      
+    })
+    this.$root.$on('make-offer', (fingerprint, offerValue) => {
+      console.log('make-offer, value: ' + offerValue);
     })
   },
   data() {
