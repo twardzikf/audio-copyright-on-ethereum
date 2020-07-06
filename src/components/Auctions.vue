@@ -43,7 +43,7 @@
             </div>
             <md-dialog-actions>
               <md-button class="md-primary" @click="isEditDialogActive = false">Close</md-button>
-              <md-button class="md-primary" @click="onEditProperty(this.editForm.fingerprint)">Save</md-button>
+              <md-button class="md-primary" @click="onEditProperty(editForm.fingerprint)">Save</md-button>
             </md-dialog-actions>
           </md-dialog>
 
@@ -56,7 +56,7 @@
             </div>
             <md-dialog-actions>
               <md-button class="md-primary" @click="isRemoveDialogActive = false">Close</md-button>
-              <md-button class="md-accent" @click="onRemoveFromToSell(this.removeForm.fingerprint)">Remove</md-button>
+              <md-button class="md-accent" @click="onRemoveFromToSell(removeForm.fingerprint)">Remove</md-button>
             </md-dialog-actions>
           </md-dialog>
     </div>
@@ -98,7 +98,7 @@
             </div>
             <md-dialog-actions>
               <md-button class="md-primary" @click="isOfferDialogActive = false">Close</md-button>
-              <md-button class="md-primary" @click="onMakeOffer(this.offerForm.fingerprint)">Save</md-button>
+              <md-button class="md-primary" @click="onMakeOffer(offerForm.fingerprint)">Save</md-button>
             </md-dialog-actions>
           </md-dialog>
     </div>
@@ -138,7 +138,7 @@ export default {
     onEditProperty(fingerprint) {
       console.log({ fingerprint: fingerprint, minPrice:  this.editForm.minPrice, expiry: this.editForm.expiry });
       
-      this.$root.$emit('change-property-to-sell', { fingerprint: fingerprint, minPrice:  this.editForm.minPrice, expiry: this.editForm.expiry })
+      this.$root.$emit('change-property-to-sell', { fingerprint: fingerprint, minPrice: this.editForm.minPrice, expiry: this.editForm.expiry });
       this.isEditDialogActive = false;
     },
     onRemoveFromToSell(fingerprint) {

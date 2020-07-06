@@ -47,15 +47,17 @@ new Vue({
     this.$root.$on('add-fingerprint', (file, title) => {
       this.calculateFingerprint(file, title);
     })
-    this.$root.$on('change-property-to-sell', (fingerprint, minPrice, expiry) => {
+    this.$root.$on('change-property-to-sell', ({fingerprint, minPrice, expiry}) => {
       console.log('change-property-to-sell');
+      console.log(fingerprint + ' ' + minPrice + ' ' + expiry);
+      
     })
     this.$root.$on('remove-from-to-sell', (fingerprint) => {
       console.log('remove-from-to-sell');
       console.log(fingerprint);
       
     })
-    this.$root.$on('make-offer', (fingerprint, offerValue) => {
+    this.$root.$on('make-offer', ({fingerprint, offerValue}) => {
       console.log('make-offer, value: ' + offerValue);
     })
   },
