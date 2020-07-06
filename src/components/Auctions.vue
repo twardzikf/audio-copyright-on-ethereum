@@ -23,42 +23,43 @@
             <md-button class="md-icon-button" @click="openEditDialog(auction.fingerprint)">
               <md-icon>edit</md-icon>
             </md-button>
-            <md-button class="md-icon-button md-accent" @click="openRemoveDialog(auction.fingerprint)">
+            <md-button
+              class="md-icon-button md-accent"
+              @click="openRemoveDialog(auction.fingerprint)"
+            >
               <md-icon>delete</md-icon>
             </md-button>
           </md-table-cell>
         </md-table-row>
       </md-table>
       <md-dialog :md-active.sync="isEditDialogActive">
-            <md-dialog-title>Edit auction conditions</md-dialog-title>
-            <div class="md-layout" style="margin-left: 1.5rem; margin-right: 1.5rem;">
-              <md-field>
-                <md-icon>attach_money</md-icon>
-                <label>Minimal Price</label>
-                <md-input type="number" v-model="editForm.minPrice"></md-input>
-              </md-field>
-              <md-datepicker v-model="editForm.expiry">
-                <label>Expires</label>
-              </md-datepicker>
-            </div>
-            <md-dialog-actions>
-              <md-button class="md-primary" @click="isEditDialogActive = false">Close</md-button>
-              <md-button class="md-primary" @click="onEditProperty(editForm.fingerprint)">Save</md-button>
-            </md-dialog-actions>
-          </md-dialog>
+        <md-dialog-title>Edit auction conditions</md-dialog-title>
+        <div class="md-layout" style="margin-left: 1.5rem; margin-right: 1.5rem;">
+          <md-field>
+            <md-icon>attach_money</md-icon>
+            <label>Minimal Price</label>
+            <md-input type="number" v-model="editForm.minPrice"></md-input>
+          </md-field>
+          <md-datepicker v-model="editForm.expiry">
+            <label>Expires</label>
+          </md-datepicker>
+        </div>
+        <md-dialog-actions>
+          <md-button class="md-primary" @click="isEditDialogActive = false">Close</md-button>
+          <md-button class="md-primary" @click="onEditProperty(editForm.fingerprint)">Save</md-button>
+        </md-dialog-actions>
+      </md-dialog>
 
-          <md-dialog :md-active.sync="isRemoveDialogActive">
-            <md-dialog-title>Cancel auction</md-dialog-title>
-            <div class="md-layout" style="margin-left: 1.5rem; margin-right: 1.5rem;">
-              <p>
-                Are you sure you want to cancel this auction?
-              </p>
-            </div>
-            <md-dialog-actions>
-              <md-button class="md-primary" @click="isRemoveDialogActive = false">Close</md-button>
-              <md-button class="md-accent" @click="onRemoveFromToSell(removeForm.fingerprint)">Remove</md-button>
-            </md-dialog-actions>
-          </md-dialog>
+      <md-dialog :md-active.sync="isRemoveDialogActive">
+        <md-dialog-title>Cancel auction</md-dialog-title>
+        <div class="md-layout" style="margin-left: 1.5rem; margin-right: 1.5rem;">
+          <p>Are you sure you want to cancel this auction?</p>
+        </div>
+        <md-dialog-actions>
+          <md-button class="md-primary" @click="isRemoveDialogActive = false">Close</md-button>
+          <md-button class="md-accent" @click="onRemoveFromToSell(removeForm.fingerprint)">Remove</md-button>
+        </md-dialog-actions>
+      </md-dialog>
     </div>
     <div class="section">
       <span class="title">Auctions:</span>
@@ -80,7 +81,10 @@
           <md-table-cell>{{ auction.highestOffer }}</md-table-cell>
           <md-table-cell>{{ auction.expiry }}</md-table-cell>
           <md-table-cell>
-            <md-button class="md-icon-button md-primary" @click="openOfferDialog(auction.fingerprint)">
+            <md-button
+              class="md-icon-button md-primary"
+              @click="openOfferDialog(auction.fingerprint)"
+            >
               <md-icon md-src="/static/money-check-alt-solid.svg" />
               <md-tooltip md-direction="top">Make an offer</md-tooltip>
             </md-button>
@@ -88,19 +92,19 @@
         </md-table-row>
       </md-table>
       <md-dialog :md-active.sync="isOfferDialogActive">
-            <md-dialog-title>Make an offer</md-dialog-title>
-            <div class="md-layout" style="margin-left: 1.5rem; margin-right: 1.5rem;">
-              <md-field>
-                <md-icon>attach_money</md-icon>
-                <label>Your offer</label>
-                <md-input type="number" v-model="offerForm.offerValue"></md-input>
-              </md-field>
-            </div>
-            <md-dialog-actions>
-              <md-button class="md-primary" @click="isOfferDialogActive = false">Close</md-button>
-              <md-button class="md-primary" @click="onMakeOffer(offerForm.fingerprint)">Save</md-button>
-            </md-dialog-actions>
-          </md-dialog>
+        <md-dialog-title>Make an offer</md-dialog-title>
+        <div class="md-layout" style="margin-left: 1.5rem; margin-right: 1.5rem;">
+          <md-field>
+            <md-icon>attach_money</md-icon>
+            <label>Your offer</label>
+            <md-input type="number" v-model="offerForm.offerValue"></md-input>
+          </md-field>
+        </div>
+        <md-dialog-actions>
+          <md-button class="md-primary" @click="isOfferDialogActive = false">Close</md-button>
+          <md-button class="md-primary" @click="onMakeOffer(offerForm.fingerprint)">Save</md-button>
+        </md-dialog-actions>
+      </md-dialog>
     </div>
   </div>
 </template>
@@ -136,17 +140,28 @@ export default {
   },
   methods: {
     onEditProperty(fingerprint) {
-      console.log({ fingerprint: fingerprint, minPrice:  this.editForm.minPrice, expiry: this.editForm.expiry });
-      
-      this.$root.$emit('change-property-to-sell', { fingerprint: fingerprint, minPrice: this.editForm.minPrice, expiry: this.editForm.expiry });
+      console.log({
+        fingerprint: fingerprint,
+        minPrice: this.editForm.minPrice,
+        expiry: this.editForm.expiry
+      });
+
+      this.$root.$emit("change-property-to-sell", {
+        fingerprint: fingerprint,
+        minPrice: this.editForm.minPrice,
+        expiry: this.editForm.expiry
+      });
       this.isEditDialogActive = false;
     },
     onRemoveFromToSell(fingerprint) {
-      this.$root.$emit('remove-from-to-sell', {fingerprint: fingerprint});
+      this.$root.$emit("remove-from-to-sell", { fingerprint: fingerprint });
       this.isRemoveDialogActive = false;
     },
     onMakeOffer(fingerprint) {
-      this.$root.$emit('make-offer', {fingerprint: fingerprint, offerValue: this.offerForm.offerValue});
+      this.$root.$emit("make-offer", {
+        fingerprint: fingerprint,
+        offerValue: this.offerForm.offerValue
+      });
       this.isOfferDialogActive = false;
     },
     openRemoveDialog(fingerprint) {
