@@ -44,19 +44,18 @@ contract PropertiesDB {
         );
         // require(now >= auctions[_fingerprint].endTime, "Auction not expired yet");
         auctions[_fingerprint].running = false;
-        address payable oldowner = auctions[_fingerprint].beneficiary;
-        oldowner.transfer(auctions[_fingerprint].highestOffer);
-        //switch owners
-        //add to new owner properties list
-        properties[auctions[_fingerprint].highestBidder].push(
-            getProperty(_fingerprint)
-        );
-        if (!isOwnerPresent(auctions[_fingerprint].highestBidder))
-            propertyOwners.push(auctions[_fingerprint].highestBidder);
-        //remove from old owners list
-        deleteFromProperties(_fingerprint, oldowner);
-        if (properties[oldowner].length == 0) deleteFromOwners(oldowner);
 
+        if(auctions[_fingerprint].highestBidder != address(0x0)){
+            address payable oldowner = auctions[_fingerprint].beneficiary;
+            oldowner.transfer(auctions[_fingerprint].highestOffer);
+            //switch owners
+            //add to new owner properties list
+            properties[auctions[_fingerprint].highestBidder].push(getProperty(_fingerprint));
+            if (!isOwnerPresent(auctions[_fingerprint].highestBidder)) propertyOwners.push(auctions[_fingerprint].highestBidder);
+            //remove from old owners list
+            deleteFromProperties(_fingerprint, oldowner);
+            if(properties[oldowner].length == 0) deleteFromOwners(oldowner);
+        }
         //remove from the map auctions (set endTime to 0 - because thats how we check if auction exists)
         auctions[_fingerprint].endTime = 0;
         //remove from auctionFingerprints
