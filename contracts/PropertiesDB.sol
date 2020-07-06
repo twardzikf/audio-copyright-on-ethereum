@@ -129,14 +129,10 @@ contract PropertiesDB {
 
         //store auction
         auctionFingerprints.push(_fingerprint);
-
-        auctions[_fingerprint].fingerprint = _fingerprint;
-        auctions[_fingerprint].startPrice = _startPrice;
-        auctions[_fingerprint].highestOffer = 0;
-        auctions[_fingerprint].highestBidder = address(0x0);
-        auctions[_fingerprint].beneficiary = msg.sender;
-        auctions[_fingerprint].ended = false;
-        auctions[_fingerprint].endTime = now + _duration; //TODO googly why its not safe
+        
+        AuctionEntry memory auction = AuctionEntry(_fingerprint, _startPrice * 1000000000000000000, 0, 
+        address(0x0), msg.sender, false, now + _duration);
+        auctions[_fingerprint] = auction;
     }
 
     /* Actions on the database */
