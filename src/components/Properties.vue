@@ -52,7 +52,7 @@
       <md-dialog-title>Create an auction</md-dialog-title>
       <div class="md-layout" style="margin-left: 1.5rem; margin-right: 1.5rem;">
         <md-field>
-          <md-icon>attach_money</md-icon>
+          <md-icon md-src="/static/ethereum.svg" />
           <label>Minimum price</label>
           <md-input type="number" v-model="auctionForm.minPrice"></md-input>
         </md-field>

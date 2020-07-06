@@ -14,11 +14,11 @@
         </md-table-row>
         <md-table-row v-for="(auction, index) in ownAuctions" :key="auction[0]">
           <md-table-cell md-numeric>{{ (index + 1) }}</md-table-cell>
-          <md-table-cell>{{ auction[0] }}</md-table-cell>
+          <md-table-cell>{{ auction[0] | truncate(20, '...') }}</md-table-cell>
           <!-- <md-table-cell>{{ auction.fingerprint }}</md-table-cell> -->
-          <md-table-cell>{{ auction[1] }}</md-table-cell>
-          <md-table-cell>{{ auction[2] }}</md-table-cell>
-          <md-table-cell>{{ auction[3] }}</md-table-cell>
+          <md-table-cell>{{ ( parseInt(auction[1]) / Math.pow(10, 18)) + 'Eth' }}</md-table-cell>
+          <md-table-cell>{{ (parseInt(auction[2]) / Math.pow(10, 18)) + 'Eth' }}</md-table-cell>
+          <md-table-cell>{{ new Date(Date.now() + parseInt(auction[6])).toDateString() }}</md-table-cell>
           <md-table-cell>
             <md-button class="md-icon-button" @click="openEditDialog(auction[0])" disabled>
               <md-icon>edit</md-icon>
@@ -27,7 +27,7 @@
               class="md-icon-button md-accent"
               @click="openRemoveDialog(auction[0])"
             >
-              <md-icon>delete</md-icon>
+              <md-icon md-src="/static/stop.svg" />
             </md-button>
           </md-table-cell>
         </md-table-row>
@@ -36,7 +36,7 @@
         <md-dialog-title>Edit auction conditions</md-dialog-title>
         <div class="md-layout" style="margin-left: 1.5rem; margin-right: 1.5rem;">
           <md-field>
-            <md-icon>attach_money</md-icon>
+            <md-icon md-src="/static/ethereum.svg" />
             <label>Minimal Price</label>
             <md-input type="number" v-model="editForm.minPrice"></md-input>
           </md-field>
@@ -45,19 +45,19 @@
           </md-datepicker>
         </div>
         <md-dialog-actions>
-          <md-button class="md-primary" @click="isEditDialogActive = false">Close</md-button>
+          <md-button class="md-primary" @click="isEditDialogActive = false">Cancel</md-button>
           <md-button class="md-primary" @click="onEditProperty(editForm.fingerprint)">Save</md-button>
         </md-dialog-actions>
       </md-dialog>
 
       <md-dialog :md-active.sync="isRemoveDialogActive">
-        <md-dialog-title>Cancel auction</md-dialog-title>
+        <md-dialog-title>Finish auction</md-dialog-title>
         <div class="md-layout" style="margin-left: 1.5rem; margin-right: 1.5rem;">
-          <p>Are you sure you want to cancel this auction?</p>
+          <p>Are you sure you want to finish this auction?</p>
         </div>
         <md-dialog-actions>
-          <md-button class="md-primary" @click="isRemoveDialogActive = false">Close</md-button>
-          <md-button class="md-accent" @click="onRemoveFromToSell(removeForm.fingerprint)">Remove</md-button>
+          <md-button class="md-primary" @click="isRemoveDialogActive = false">Cancel</md-button>
+          <md-button class="md-accent" @click="onRemoveFromToSell(removeForm.fingerprint)">Finish</md-button>
         </md-dialog-actions>
       </md-dialog>
     </div>
@@ -75,11 +75,11 @@
         </md-table-row>
         <md-table-row v-for="(auction, index) in auctions" :key="auction[0]">
           <md-table-cell md-numeric>{{ (index + 1) }}</md-table-cell>
-          <md-table-cell>{{ auction[0] }}</md-table-cell>
+          <md-table-cell>{{ auction[0] | truncate(20, '...') }}</md-table-cell>
           <!-- <md-table-cell>{{ auction.fingerprint }}</md-table-cell> -->
-          <md-table-cell>{{ auction[1] }}</md-table-cell>
-          <md-table-cell>{{ auction[2] }}</md-table-cell>
-          <md-table-cell>{{ auction[3] }}</md-table-cell>
+          <md-table-cell>{{ ( parseInt(auction[1]) / Math.pow(10, 18)) + 'Eth' }}</md-table-cell>
+          <md-table-cell>{{ (parseInt(auction[2]) / Math.pow(10, 18)) + 'Eth' }}</md-table-cell>
+          <md-table-cell>{{ new Date(Date.now() + parseInt(auction[6])).toDateString() }}</md-table-cell>
           <md-table-cell>
             <md-button
               class="md-icon-button md-primary"
@@ -95,13 +95,13 @@
         <md-dialog-title>Make an offer</md-dialog-title>
         <div class="md-layout" style="margin-left: 1.5rem; margin-right: 1.5rem;">
           <md-field>
-            <md-icon>attach_money</md-icon>
+            <md-icon md-src="/static/ethereum.svg" />
             <label>Your offer</label>
             <md-input type="number" v-model="offerForm.offerValue"></md-input>
           </md-field>
         </div>
         <md-dialog-actions>
-          <md-button class="md-primary" @click="isOfferDialogActive = false">Close</md-button>
+          <md-button class="md-primary" @click="isOfferDialogActive = false">Cancel</md-button>
           <md-button class="md-primary" @click="onMakeOffer(offerForm.fingerprint)">Save</md-button>
         </md-dialog-actions>
       </md-dialog>

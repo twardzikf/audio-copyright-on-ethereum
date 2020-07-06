@@ -41,7 +41,6 @@ app.post('/', (req, res) => {
             song.mv('./audio_files/' + song.name);
             fpcalc("./audio_files/" + song.name, function (err, result) {
                 if (err) throw err;
-                console.log(result.fingerprint);
                 res.send({
                     status: 200,
                     data: {

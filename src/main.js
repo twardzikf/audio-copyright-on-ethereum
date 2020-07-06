@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import App from './components/App.vue'
+import Router from 'vue-router'
 import router from './router'
 import axios from 'axios'
 import TruffleContract from 'truffle-contract'
@@ -14,6 +15,11 @@ Vue.config.devtools = true
 Vue.config.productionTip = false
 Vue.prototype.$http = axios
 
+const originalPush = Router.prototype.push;
+Router.prototype.push = function push(location) {
+  return originalPush.call(this, location).catch(err => err)
+};
+
 Vue.filter('truncate', function (text, length, suffix) {
   if (text.length > length) {
       return text.substring(0, length) + suffix;
@@ -21,6 +27,8 @@ Vue.filter('truncate', function (text, length, suffix) {
       return text;
   }
 });
+
+Vue.use(Router);
 
 /* eslint-disable no-new */
 
@@ -140,8 +148,19 @@ new Vue({
       this.contracts.propertiesDB.deployed().then((instance)  => {
         return instance.fetchProperties({ from: this.account })
       }).then((result) => {
+          let ownProperties = [];
+          console.log(result);
+          
           this.ownProperties = result;
         })
+        // this.contracts.propertiesDB.deployed().then((instance)  => {
+        //   return instance.fetchAllProperties({ from: this.account })
+        // }).then((result) => {
+        //     let ownProperties = [];
+        //     console.log(result);
+            
+        //     // this.ownProperties = result;
+        //   })
     },
     fetchPropertiesForSale(callBack) {
       this.contracts.propertiesDB.deployed().then((instance)  => {
@@ -166,8 +185,11 @@ new Vue({
       })
     },
     async makeOffer(fingerprint, price) {
+      const ethPrice = price * Math.pow(10, 18);
       await this.contracts.propertiesDB.deployed().then( async (instance) => {
-        return await instance.bid(fingerprint, {from: this.account, value: price})
+        return await instance.bid(fingerprint, {from: this.account, value: ethPrice})
+      }).then(() => {
+        this.fetchAllAuctions();
       })
     },
     async createAuction(fingerprint, startPrice, endDate) {
@@ -182,7 +204,7 @@ new Vue({
     },
     async endAuction(fingerprint) {
       await this.contracts.propertiesDB.deployed().then( async (instance) => {
-        return await instance.endAuction(fingerprint, {from: this.account})
+        return await instance.endAuction(fingerprint.fingerprint, {from: this.account})
       }).then(() => {
         this.fetchAllAuctions();
       })
@@ -191,6 +213,7 @@ new Vue({
       await this.contracts.propertiesDB.deployed().then(async (instance)  => {
         return await instance.getOwnAuctions({ from: this.account });
       }).then((result) => {
+        console.log(result)
         this.ownAuctions = result;
       })
     },
@@ -198,7 +221,7 @@ new Vue({
       await this.contracts.propertiesDB.deployed().then(async (instance)  => {
         return await instance.getOtherAuctions({ from: this.account });
       }).then((result) => {
-        this.otherAuctions = result;
+        this.auctions = result;
       })
     },
     async fetchAllAuctions() {
