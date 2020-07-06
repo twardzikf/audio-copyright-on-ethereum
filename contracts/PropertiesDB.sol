@@ -52,7 +52,7 @@ contract PropertiesDB {
         if (!isOwnerPresent(auctions[_fingerprint].highestBidder)) propertyOwners.push(auctions[_fingerprint].highestBidder);
         //remove from old owners list
         deleteFromProperties(_fingerprint, oldowner);
-        // TODO delete from propertyOwners! use index!
+        if(properties[oldowner].length == 0) deleteFromOwners(oldowner);
         
         //remove from the map auctions (set endTime to 0 - because thats how we check if auction exists)
         auctions[_fingerprint].endTime = 0;
@@ -193,7 +193,7 @@ contract PropertiesDB {
         properties[msg.sender].push(property);
         deleteFromPropertiesForSale(_fingerprint);
         deleteFromProperties(_fingerprint, owner);
-        // TODO: delete from propertyOwners! use index to avoid loops!
+        if(properties[owner].length == 0) deleteFromOwners(owner);
         owner.transfer(price);
     }
 
@@ -295,6 +295,23 @@ contract PropertiesDB {
         }
         delete properties[_owner][properties[_owner].length-1];
         properties[_owner].length--;
+    }
+    
+    function deleteFromOwners(address _owner)  private {
+        uint index = 0;
+        for (uint i = 0; i < propertyOwners.length; i++) {
+            if (propertyOwners[i] == _owner) {
+                index = i;
+            }
+        }
+
+        if (index >= propertyOwners.length) return;
+
+        for (uint i = index; i < propertyOwners.length-1; i++){
+            propertyOwners[i] = propertyOwners[i+1];
+        }
+        delete propertyOwners[propertyOwners.length-1];
+        propertyOwners.length--;
     }
     
     
