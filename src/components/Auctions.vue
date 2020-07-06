@@ -93,7 +93,7 @@
               <md-field>
                 <md-icon>attach_money</md-icon>
                 <label>Your offer</label>
-                <md-input type="number" v-model="this.offerForm.offerValue"></md-input>
+                <md-input type="number" v-model="offerForm.offerValue"></md-input>
               </md-field>
             </div>
             <md-dialog-actions>
@@ -146,8 +146,8 @@ export default {
       this.isRemoveDialogActive = false;
     },
     onMakeOffer(fingerprint) {
-      this.$root.$emit('make-offer', {fingerprint: fingerprint, offerValue: this.offerValue});
-      this.isRemoveDialogActive = false;
+      this.$root.$emit('make-offer', {fingerprint: fingerprint, offerValue: this.offerForm.offerValue});
+      this.isOfferDialogActive = false;
     },
     openRemoveDialog(fingerprint) {
       this.isRemoveDialogActive = true;
