@@ -12,17 +12,18 @@
           <md-table-head>Expires</md-table-head>
           <md-table-head>Actions</md-table-head>
         </md-table-row>
-        <md-table-row v-for="(auction, index) in ownAuctions" :key="auction[0]">
+        <md-table-row v-for="(auction, index) in ownAuctions" :key="auction.fingerprint">
           <md-table-cell md-numeric>{{ (index + 1) }}</md-table-cell>
-          <md-table-cell>{{ auction[0] | truncate(20, '...') }}</md-table-cell>
+          <md-table-cell>{{ auction.fingerprint | truncate(20, '...') }}</md-table-cell>
           <!-- <md-table-cell>{{ auction.fingerprint }}</md-table-cell> -->
-          <md-table-cell>{{ ( parseInt(auction[1]) / Math.pow(10, 18)) + 'Eth' }}</md-table-cell>
-          <md-table-cell>{{ (parseInt(auction[2]) / Math.pow(10, 18)) + 'Eth' }}</md-table-cell>
-          <md-table-cell>{{ new Date(Date.now() + parseInt(auction[6])).toDateString() }}</md-table-cell>
+          <md-table-cell>{{ ( parseInt(auction.startPrice) / Math.pow(10, 18)) + 'Eth' }}</md-table-cell>
+          <md-table-cell>{{ (parseInt(auction.highestOffer) / Math.pow(10, 18)) + 'Eth' }}</md-table-cell>
+          <md-table-cell>{{ new Date(Date.now() + parseInt(auction.endTime)).toDateString() }}</md-table-cell>
           <md-table-cell>
-            <md-button class="md-icon-button" @click="openEditDialog(auction[0])" disabled>
+            <md-button class="md-icon-button" @click="openEditDialog(auction.fingerprint)" :disabled="auction.highestOffer !== '0'">
               <md-icon>edit</md-icon>
             </md-button>
+            <md-tooltip md-direction="left" v-if="auction.highestOffer !== '0'">Auction already in progress</md-tooltip>
             <md-button
               class="md-icon-button md-accent"
               @click="openRemoveDialog(auction[0])"
@@ -73,17 +74,17 @@
           <md-table-head>Expires</md-table-head>
           <md-table-head>Actions</md-table-head>
         </md-table-row>
-        <md-table-row v-for="(auction, index) in auctions" :key="auction[0]">
+        <md-table-row v-for="(auction, index) in auctions" :key="auction.fingerprint">
           <md-table-cell md-numeric>{{ (index + 1) }}</md-table-cell>
-          <md-table-cell>{{ auction[0] | truncate(20, '...') }}</md-table-cell>
+          <md-table-cell>{{ auction.fingerprint | truncate(20, '...') }}</md-table-cell>
           <!-- <md-table-cell>{{ auction.fingerprint }}</md-table-cell> -->
-          <md-table-cell>{{ ( parseInt(auction[1]) / Math.pow(10, 18)) + 'Eth' }}</md-table-cell>
-          <md-table-cell>{{ (parseInt(auction[2]) / Math.pow(10, 18)) + 'Eth' }}</md-table-cell>
-          <md-table-cell>{{ new Date(Date.now() + parseInt(auction[6])).toDateString() }}</md-table-cell>
+          <md-table-cell>{{ ( parseInt(auction.startPrice) / Math.pow(10, 18)) + 'Eth' }}</md-table-cell>
+          <md-table-cell>{{ (parseInt(auction.highestOffer) / Math.pow(10, 18)) + 'Eth' }}</md-table-cell>
+          <md-table-cell>{{ new Date(Date.now() + parseInt(auction.endTime)).toDateString() }}</md-table-cell>
           <md-table-cell>
             <md-button
               class="md-icon-button md-primary"
-              @click="openOfferDialog(auction[0])"
+              @click="openOfferDialog(auction.fingerprint)"
             >
               <md-icon md-src="/static/money-check-alt-solid.svg" />
               <md-tooltip md-direction="top">Make an offer</md-tooltip>

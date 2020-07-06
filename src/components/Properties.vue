@@ -114,6 +114,7 @@ export default {
         minPrice: this.auctionForm.minPrice,
         expires: this.auctionForm.expires
       });
+      this.isAuctionDialogActive = false
     },
   }
 };
