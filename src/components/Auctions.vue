@@ -12,20 +12,20 @@
           <md-table-head>Expires</md-table-head>
           <md-table-head>Actions</md-table-head>
         </md-table-row>
-        <md-table-row v-for="(auction, index) in ownAuctions" :key="auction.fingerprint">
+        <md-table-row v-for="(auction, index) in ownAuctions" :key="auction[0]">
           <md-table-cell md-numeric>{{ (index + 1) }}</md-table-cell>
-          <md-table-cell>{{ auction.title }}</md-table-cell>
+          <md-table-cell>{{ auction[0] }}</md-table-cell>
           <!-- <md-table-cell>{{ auction.fingerprint }}</md-table-cell> -->
-          <md-table-cell>{{ auction.minPrice }}</md-table-cell>
-          <md-table-cell>{{ auction.highestOffer }}</md-table-cell>
-          <md-table-cell>{{ auction.expiry }}</md-table-cell>
+          <md-table-cell>{{ auction[1] }}</md-table-cell>
+          <md-table-cell>{{ auction[2] }}</md-table-cell>
+          <md-table-cell>{{ auction[3] }}</md-table-cell>
           <md-table-cell>
-            <md-button class="md-icon-button" @click="openEditDialog(auction.fingerprint)">
+            <md-button class="md-icon-button" @click="openEditDialog(auction[0])" disabled>
               <md-icon>edit</md-icon>
             </md-button>
             <md-button
               class="md-icon-button md-accent"
-              @click="openRemoveDialog(auction.fingerprint)"
+              @click="openRemoveDialog(auction[0])"
             >
               <md-icon>delete</md-icon>
             </md-button>
@@ -73,17 +73,17 @@
           <md-table-head>Expires</md-table-head>
           <md-table-head>Actions</md-table-head>
         </md-table-row>
-        <md-table-row v-for="(auction, index) in auctions" :key="auction.fingerprint">
+        <md-table-row v-for="(auction, index) in auctions" :key="auction[0]">
           <md-table-cell md-numeric>{{ (index + 1) }}</md-table-cell>
-          <md-table-cell>{{ auction.title }}</md-table-cell>
+          <md-table-cell>{{ auction[0] }}</md-table-cell>
           <!-- <md-table-cell>{{ auction.fingerprint }}</md-table-cell> -->
-          <md-table-cell>{{ auction.minPrice }}</md-table-cell>
-          <md-table-cell>{{ auction.highestOffer }}</md-table-cell>
-          <md-table-cell>{{ auction.expiry }}</md-table-cell>
+          <md-table-cell>{{ auction[1] }}</md-table-cell>
+          <md-table-cell>{{ auction[2] }}</md-table-cell>
+          <md-table-cell>{{ auction[3] }}</md-table-cell>
           <md-table-cell>
             <md-button
               class="md-icon-button md-primary"
-              @click="openOfferDialog(auction.fingerprint)"
+              @click="openOfferDialog(auction[0])"
             >
               <md-icon md-src="/static/money-check-alt-solid.svg" />
               <md-tooltip md-direction="top">Make an offer</md-tooltip>
