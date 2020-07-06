@@ -174,7 +174,8 @@ contract PropertiesDB {
         require(isPropertyPresent(_fingerprint), "There is no such properrty saved on the blockchain");
         require(isOwner(_fingerprint, msg.sender), "Only the owner can call this function");
         require(!isPropertyForSale(_fingerprint), "This property is already for sale");
-
+        require(auctions[_fingerprint].running == false, "This property is on an auction");
+        
         propertiesForSale.push(_fingerprint);
         salePrices[_fingerprint] = _price;
     }
