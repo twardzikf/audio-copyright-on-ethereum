@@ -96,7 +96,7 @@ contract PropertiesDB {
             "Only the owner can edit the auction"
         );
 
-        auctions[_fingerprint].endTime = now + _duration;
+        auctions[_fingerprint].endTime = _duration;
         auctions[_fingerprint].startPrice = _startPrice * 1000000000000000000;
     }
 
@@ -172,7 +172,7 @@ contract PropertiesDB {
         uint256 _duration
     ) public {
         require(_startPrice >= 0, "starting price cannot be negative");
-        require(_duration > 0, "Auction duration need to larger than zero");
+        require(_duration - now > 0, "Auction duration need to larger than zero");
         require(
             auctions[_fingerprint].running == false,
             "Auction already started"
@@ -202,7 +202,7 @@ contract PropertiesDB {
             address(0x0),
             msg.sender,
             true,
-            now + _duration
+            _duration
         );
         auctions[_fingerprint] = auction;
     }
@@ -304,8 +304,8 @@ contract PropertiesDB {
         properties[msg.sender].push(property);
         deleteFromPropertiesForSale(_fingerprint);
         deleteFromProperties(_fingerprint, owner);
-        if (properties[owner].length == 0) deleteFromOwners(owner);
         owner.transfer(price);
+        if (properties[owner].length == 0) deleteFromOwners(owner);
     }
 
     /* Queries on the database */

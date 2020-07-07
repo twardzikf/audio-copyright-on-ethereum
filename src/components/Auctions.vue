@@ -18,7 +18,7 @@
           <!-- <md-table-cell>{{ auction.fingerprint }}</md-table-cell> -->
           <md-table-cell>{{ ( parseInt(auction.startPrice) / Math.pow(10, 18)) + 'Eth' }}</md-table-cell>
           <md-table-cell>{{ (parseInt(auction.highestOffer) / Math.pow(10, 18)) + 'Eth' }}</md-table-cell>
-          <md-table-cell>{{ new Date(Date.now() + parseInt(auction.endTime)).toDateString() }}</md-table-cell>
+          <md-table-cell>{{ new Date(parseInt(auction.endTime) * 1000).toDateString() }}</md-table-cell>
           <md-table-cell>
             <md-button class="md-icon-button" @click="openEditDialog(auction.fingerprint)" :disabled="auction.highestOffer !== '0'">
               <md-icon>edit</md-icon>
@@ -80,7 +80,7 @@
           <!-- <md-table-cell>{{ auction.fingerprint }}</md-table-cell> -->
           <md-table-cell>{{ ( parseInt(auction.startPrice) / Math.pow(10, 18)) + 'Eth' }}</md-table-cell>
           <md-table-cell>{{ (parseInt(auction.highestOffer) / Math.pow(10, 18)) + 'Eth' }}</md-table-cell>
-          <md-table-cell>{{ new Date(Date.now() + parseInt(auction.endTime)).toDateString() }}</md-table-cell>
+          <md-table-cell>{{ new Date(parseInt(auction.endTime) * 1000).toDateString() }}</md-table-cell>
           <md-table-cell>
             <md-button
               class="md-icon-button md-primary"

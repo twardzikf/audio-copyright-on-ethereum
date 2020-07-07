@@ -197,8 +197,10 @@ new Vue({
       const now = Date.now();
       const endDateObj = new Date(endDate);
       const end = endDateObj.getTime();
+      console.log({now: now, end: end});
+      
       await this.contracts.propertiesDB.deployed().then( async (instance) => {
-        return await instance.createAuction(fingerprint, startPrice, (end - now), {from: this.account})
+        return await instance.createAuction(fingerprint, startPrice, Math.floor(end / 1000), {from: this.account})
       }).then(() => {
         this.fetchAllAuctions();
       })
@@ -208,7 +210,7 @@ new Vue({
       const endDateObj = new Date(endDate);
       const end = endDateObj.getTime();
       await this.contracts.propertiesDB.deployed().then( async (instance) => {
-        return await instance.updateAuction(fingerprint, minPrice, (end - now), {from: this.account})
+        return await instance.updateAuction(fingerprint, minPrice, Math.floor(end / 1000), {from: this.account})
       }).then(() => {
         this.fetchAllAuctions();
       })

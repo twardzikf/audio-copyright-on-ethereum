@@ -13,7 +13,7 @@ export default new Router({
       mode: 'history',
       path: '/',
       name: 'Root',
-      component: Home
+      component: Properties
     },
     {
       mode: 'history',
