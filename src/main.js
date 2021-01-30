@@ -59,6 +59,7 @@ new Vue({
     this.$root.$on('change-property-to-sell', ({fingerprint, minPrice, expiry}) => {
       console.log('change-property-to-sell');
       console.log(fingerprint + ' ' + minPrice + ' ' + expiry);
+      this.modifyAuction(fingerprint, minPrice, expiry);
     })
     this.$root.$on('create-auction', ({fingerprint, minPrice, expires}) => {
       this.createAuction(fingerprint, minPrice, expires);
@@ -196,8 +197,20 @@ new Vue({
       const now = Date.now();
       const endDateObj = new Date(endDate);
       const end = endDateObj.getTime();
+      console.log({now: now, end: end});
+      
       await this.contracts.propertiesDB.deployed().then( async (instance) => {
-        return await instance.createAuction(fingerprint, startPrice, (end - now), {from: this.account})
+        return await instance.createAuction(fingerprint, startPrice, Math.floor(end / 1000), {from: this.account})
+      }).then(() => {
+        this.fetchAllAuctions();
+      })
+    },
+    async modifyAuction(fingerprint, minPrice, endDate) {
+      const now = Date.now();
+      const endDateObj = new Date(endDate);
+      const end = endDateObj.getTime();
+      await this.contracts.propertiesDB.deployed().then( async (instance) => {
+        return await instance.updateAuction(fingerprint, minPrice, Math.floor(end / 1000), {from: this.account})
       }).then(() => {
         this.fetchAllAuctions();
       })
@@ -207,6 +220,7 @@ new Vue({
         return await instance.endAuction(fingerprint.fingerprint, {from: this.account})
       }).then(() => {
         this.fetchAllAuctions();
+        this.fetchProperties();
       })
     },
     async fetchOwnAuctions() {

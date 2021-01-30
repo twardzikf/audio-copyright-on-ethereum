@@ -44,18 +44,22 @@ contract PropertiesDB {
         );
         // require(now >= auctions[_fingerprint].endTime, "Auction not expired yet");
         auctions[_fingerprint].running = false;
-
-        if(auctions[_fingerprint].highestBidder != address(0x0)){
-            address payable oldowner = auctions[_fingerprint].beneficiary;
-            oldowner.transfer(auctions[_fingerprint].highestOffer);
-            //switch owners
-            //add to new owner properties list
-            properties[auctions[_fingerprint].highestBidder].push(getProperty(_fingerprint));
-            if (!isOwnerPresent(auctions[_fingerprint].highestBidder)) propertyOwners.push(auctions[_fingerprint].highestBidder);
+        address payable oldowner = auctions[_fingerprint].beneficiary;
+        oldowner.transfer(auctions[_fingerprint].highestOffer);
+        //switch owners
+        //add to new owner properties list
+        properties[auctions[_fingerprint].highestBidder].push(
+            getProperty(_fingerprint)
+        );
+        if (auctions[_fingerprint].highestOffer != 0) {
+            if (!isOwnerPresent(auctions[_fingerprint].highestBidder)) {
+                propertyOwners.push(auctions[_fingerprint].highestBidder);
+            }
             //remove from old owners list
             deleteFromProperties(_fingerprint, oldowner);
-            if(properties[oldowner].length == 0) deleteFromOwners(oldowner);
+            if (properties[oldowner].length == 0) deleteFromOwners(oldowner);
         }
+
         //remove from the map auctions (set endTime to 0 - because thats how we check if auction exists)
         auctions[_fingerprint].endTime = 0;
         //remove from auctionFingerprints
@@ -74,7 +78,27 @@ contract PropertiesDB {
         }
     }
 
+    function updateAuction(
+        string memory _fingerprint,
+        uint256 _startPrice,
+        uint256 _duration
+    ) public {
+        require(
+            auctions[_fingerprint].running == true,
+            "Auction does not exist or is finished"
+        );
+        require(
+            auctions[_fingerprint].highestOffer == 0,
+            "You can only edit actions that have not been bidden on"
+        );
+        require(
+            auctions[_fingerprint].beneficiary == msg.sender,
+            "Only the owner can edit the auction"
+        );
 
+        auctions[_fingerprint].endTime = _duration;
+        auctions[_fingerprint].startPrice = _startPrice * 1000000000000000000;
+    }
 
     function bid(string memory _fingerprint) public payable {
         require(
@@ -148,7 +172,7 @@ contract PropertiesDB {
         uint256 _duration
     ) public {
         require(_startPrice >= 0, "starting price cannot be negative");
-        require(_duration > 0, "Auction duration need to larger than zero");
+        require(_duration - now > 0, "Auction duration need to larger than zero");
         require(
             auctions[_fingerprint].running == false,
             "Auction already started"
@@ -178,7 +202,7 @@ contract PropertiesDB {
             address(0x0),
             msg.sender,
             true,
-            now + _duration
+            _duration
         );
         auctions[_fingerprint] = auction;
     }
@@ -213,6 +237,7 @@ contract PropertiesDB {
             }
         }
 
+
             PropertyForSaleDTO[] memory _propertiesForSale
          = new PropertyForSaleDTO[](propertiesForSaleWithoutOwnLength);
         uint256 j = 0;
@@ -227,12 +252,26 @@ contract PropertiesDB {
         return _propertiesForSale;
     }
 
-    function offerPropertyForSale(string memory _fingerprint, uint _price) public {
-        require(isPropertyPresent(_fingerprint), "There is no such properrty saved on the blockchain");
-        require(isOwner(_fingerprint, msg.sender), "Only the owner can call this function");
-        require(!isPropertyForSale(_fingerprint), "This property is already for sale");
-        require(auctions[_fingerprint].running == false, "This property is on an auction");
-        
+    function offerPropertyForSale(string memory _fingerprint, uint256 _price)
+        public
+    {
+        require(
+            isPropertyPresent(_fingerprint),
+            "There is no such properrty saved on the blockchain"
+        );
+        require(
+            isOwner(_fingerprint, msg.sender),
+            "Only the owner can call this function"
+        );
+        require(
+            !isPropertyForSale(_fingerprint),
+            "This property is already for sale"
+        );
+        require(
+            auctions[_fingerprint].running == false,
+            "This property is on an auction"
+        );
+
         propertiesForSale.push(_fingerprint);
         salePrices[_fingerprint] = _price;
     }
@@ -265,8 +304,8 @@ contract PropertiesDB {
         properties[msg.sender].push(property);
         deleteFromPropertiesForSale(_fingerprint);
         deleteFromProperties(_fingerprint, owner);
-        if (properties[owner].length == 0) deleteFromOwners(owner);
         owner.transfer(price);
+        if (properties[owner].length == 0) deleteFromOwners(owner);
     }
 
     /* Queries on the database */
